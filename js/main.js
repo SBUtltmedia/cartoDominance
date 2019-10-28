@@ -1,6 +1,7 @@
 
 document.addEventListener("DOMContentLoaded", init);
 
+// function reports window size used to resize when window extent changes
 function reportWindowSize() {
 
   var elem = document.querySelector('html');
@@ -36,30 +37,33 @@ function init(){
   });
 
   const dominanceDataQuery = new carto.source.SQL(
-    "SELECT g.cartodb_id, g.gisjoin, g.the_geom, g.the_geom_webmercator," +
-    "t.year, t.areaname, t.v00001 as total_pop, t.v00002, t.v01001, t.v01002, t.v01003," +
-    "t.v01004, t.v01005, t.v01006, t.v01007, " +
-    "round( t.v00002::numeric / t.v00001::numeric * 100, 1) as pct_latino, " +
-    "round( t.v01001::numeric / t.v00001::numeric * 100, 1) as pct_pr, " +
-    "round( t.v01002::numeric / t.v00001::numeric * 100, 1) as pct_mex, " +
-    "round( t.v01003::numeric / t.v00001::numeric * 100, 1) as pct_cub, " +
-    "round( t.v01004::numeric / t.v00001::numeric * 100, 1) as pct_other, " +
-    "round( t.v01005::numeric / t.v00001::numeric * 100, 1) as pct_dom, " +
-    "round( t.v01006::numeric / t.v00001::numeric * 100, 1) as pct_ca, " +
-    "round( t.v01007::numeric / t.v00001::numeric * 100, 1) as pct_sa, " +
-      "CASE " +
-        "WHEN greatest(t.v01001, t.v01002, t.v01003, t.v01004, t.v01005, t.v01006, t.v01007) = t.v01001 THEN 'Puerto-Rican'" +
-        "WHEN greatest(t.v01001, t.v01002, t.v01003, t.v01004, t.v01005, t.v01006, t.v01007) = t.v01002 THEN 'Mexican'" +
-        "WHEN greatest(t.v01001, t.v01002, t.v01003, t.v01004, t.v01005, t.v01006, t.v01007) = t.v01003 THEN 'Cuban'" +
-        "WHEN greatest(t.v01001, t.v01002, t.v01003, t.v01004, t.v01005, t.v01006, t.v01007) = t.v01004 THEN 'Dominican'" +
-        "WHEN greatest(t.v01001, t.v01002, t.v01003, t.v01004, t.v01005, t.v01006, t.v01007) = t.v01005 THEN 'South American'" +
-        "WHEN greatest(t.v01001, t.v01002, t.v01003, t.v01004, t.v01005, t.v01006, t.v01007) = t.v01006 THEN 'Central American'" +
-        "WHEN greatest(t.v01001, t.v01002, t.v01003, t.v01004, t.v01005, t.v01006, t.v01007) = t.v01007 THEN 'Other'" +
-      "END as dominant_origin " +
-    "FROM tract_2017 g INNER JOIN li_tract_2017 t ON g.gisjoin = t.gisjoin " +
-    "WHERE t.v00001::numeric > 0"
+    `
+     SELECT g.cartodb_id, g.gisjoin, g.the_geom, g.the_geom_webmercator, t.year,
+     t.areaname, t.v00001::numeric as total_pop, t.v00002::numeric as latino_pop,
+     t.v00003::numeric as non_latino_pop, t.v01001::numeric as pop_pr,
+     t.v01002::numeric as pop_mex, t.v01003::numeric as pop_cub, t.v01004::numeric as pop_other,
+     t.v01005::numeric as pop_dom, t.v01006::numeric as pop_ca, t.v01007::numeric as pop_sa,
+    round( t.v00002::numeric / t.v00001::numeric * 100, 1) as pct_latino,
+    round( t.v01001::numeric / t.v00001::numeric * 100, 1) as pct_pr,
+    round( t.v01002::numeric / t.v00001::numeric * 100, 1) as pct_mex,
+    round( t.v01003::numeric / t.v00001::numeric * 100, 1) as pct_cub,
+    round( t.v01004::numeric / t.v00001::numeric * 100, 1) as pct_other,
+    round( t.v01005::numeric / t.v00001::numeric * 100, 1) as pct_dom,
+    round( t.v01006::numeric / t.v00001::numeric * 100, 1) as pct_ca,
+    round( t.v01007::numeric / t.v00001::numeric * 100, 1) as pct_sa,
+      CASE
+        WHEN greatest(t.v01001, t.v01002, t.v01003, t.v01004, t.v01005, t.v01006, t.v01007) = t.v01001 THEN 'Puerto-Rican'
+        WHEN greatest(t.v01001, t.v01002, t.v01003, t.v01004, t.v01005, t.v01006, t.v01007) = t.v01002 THEN 'Mexican'
+        WHEN greatest(t.v01001, t.v01002, t.v01003, t.v01004, t.v01005, t.v01006, t.v01007) = t.v01003 THEN 'Cuban'
+        WHEN greatest(t.v01001, t.v01002, t.v01003, t.v01004, t.v01005, t.v01006, t.v01007) = t.v01004 THEN 'Other'
+        WHEN greatest(t.v01001, t.v01002, t.v01003, t.v01004, t.v01005, t.v01006, t.v01007) = t.v01005 THEN 'Dominican'
+        WHEN greatest(t.v01001, t.v01002, t.v01003, t.v01004, t.v01005, t.v01006, t.v01007) = t.v01006 THEN 'Central American'
+        WHEN greatest(t.v01001, t.v01002, t.v01003, t.v01004, t.v01005, t.v01006, t.v01007) = t.v01007 THEN 'South American'
+      END as dominant_origin
+    FROM tract_2017 g INNER JOIN li_tract_2017 t ON g.gisjoin = t.gisjoin
+    WHERE t.v00001::numeric > 0
 
-  );
+  `);
 
 
   const dominanceStyle = new carto.style.CartoCSS(`
@@ -76,7 +80,10 @@ function init(){
        `);
   const dominanceLayer = new carto.layer.Layer(dominanceDataQuery, dominanceStyle,
     {featureClickColumns: ['dominant_origin', 'pct_latino', 'pct_pr', 'pct_mex',
-                           'pct_cub', 'pct_other', 'pct_ca', 'pct_sa' ,'areaname' ,'total_pop']}
+                           'pct_cub', 'pct_other', 'pct_ca', 'pct_sa' ,'areaname',
+                           'total_pop', 'pop_pr', 'pop_mex', 'pop_cub', 'pop_dom',
+                           'pop_sa', 'pop_ca', 'pop_other', 'non_latino_pop', 'latino_pop'
+                         ]}
   );
 
 
@@ -85,12 +92,7 @@ function init(){
 
   client.getLeafletLayer().addTo(map);
 
-  const testDataview = new carto.dataview.Category(dominanceDataQuery, 'pct_latino');
-
-  console.log(testDataview)
-
-
-//
+//  The below commented out lines generate a leaflet popUp
 //   dominanceLayer.on('featureClicked', featureEvent => {
 // console.log(featureEvent)
 //     var popup = L.popup();
@@ -120,64 +122,119 @@ function init(){
 //
 //   });
 
-  dominanceLayer.on('featureClicked',(f)=>clickedOnFeature(f))
+  // render pop up when feature of dominance layer is clicked
+  dominanceLayer.on('featureClicked',(f)=>clickedOnFeature(f));
 
-    // Create legend
-  dominanceLayer.on('metadataChanged', function(event) {
-    console.log(event)
-    event.styles.forEach(function (styleMetadata) {
-      console.log(styleMetadata)
-      switch(styleMetadata.getProperty()) {
-        case 'polygon-fill':
-          console.log('case')
-          renderLegend(styleMetadata);
-          break;
-      }
-    });
-  });
-
-
+  //functions removes popups that are not pinned when a new child is open
   function clickedOnFeature(featureEvent) {
-console.log(featureEvent)
 
-      // if ($('#popUpHolder').children().length > 0) {
-      //   var popUpChildren = $('#popUpHolder').children()
-      //
-      //   // console.log(popUpChildren.length)
-      //   var count = popUpChildren.length;
-      //   while (i = count--) {
-      //
-      //     var pin = $(popUpChildren[i - 1]).find("svg")
-      //     // console.log(i)
-      //     // console.log($(popUpChildren[i - 1]).find("svg"))
-      //     if (!$(pin).hasClass('pinned')) {
-      //       $(popUpChildren[i - 1]).remove();
-      //     }
-      //   }
-      //   //$('#popUpHolder').empty(); //commenting this out creates
-      //   // multiple pie charts
-      // }
+      if ($('#popUpHolder').children().length > 0) {
+        var popUpChildren = $('#popUpHolder').children()
+
+        // console.log(popUpChildren.length)
+        var count = popUpChildren.length;
+        while (i = count--) {
+
+          var pin = $(popUpChildren[i - 1]).find("svg")
+          // console.log(i)
+          // console.log($(popUpChildren[i - 1]).find("svg"))
+          if (!$(pin).hasClass('pinned')) {
+            $(popUpChildren[i - 1]).remove();
+          }
+        }
+        // $('#popUpHolder').empty(); //commenting this out creates multiple pie charts
+
+      }
     var popCount =popFactory.newPopUp(featureEvent.data.areaname);
-console.log(popCount)
-      // string param is data.censuspolygon
       $("#popUp" + popCount).css({
         "left" : event.clientX + 5,
         "top" : event.clientY + 5,
         "visibility" : "visible"
       });
-      pieChartData["0"].value = featureEvent.data.pct_latino;
-      pieChartData["1"].value = featureEvent.data.pct_ca;
-      pieConfig.header.subtitle.text =featureEvent.data.total_pop;
+
+      pieChartData["0"].value = featureEvent.data.pop_pr;
+      pieChartData["1"].value = featureEvent.data.pop_mex;
+      pieChartData["2"].value = featureEvent.data.pop_cub;
+      pieChartData["3"].value = featureEvent.data.pop_dom;
+      pieChartData["4"].value = featureEvent.data.pop_sa;
+      pieChartData["5"].value = featureEvent.data.pop_ca;
+      pieChartData["6"].value = featureEvent.data.pop_other;
+
+      pieConfig.header.subtitle.text =featureEvent.data.latino_pop;
       var pie = new d3pie("pieChart" + popCount, pieConfig);
-console.log(pie)
   };
 
+
+
+    // Create legend
+  dominanceLayer.on('metadataChanged', function(event) {
+    event.styles.forEach(function (styleMetadata) {
+      switch(styleMetadata.getProperty()) {
+        case 'polygon-fill':
+          renderLegend(styleMetadata);
+          break;
+      }
+      // getFeatureFill(styleMetadata);
+    });
+  });
 
   function renderLegend(metadata){
     const categories = metadata.getCategories();
     for (category of categories){
-      document.getElementById(category.name).innerHTML =`<div  class ="bullet" style="background:${category.value}"></div> ${category.name}`;
+      document.getElementById(category.name).innerHTML =
+      `<div  class ="bullet" style="background:${category.value}"></div> ${category.name}`;
+      console.log(category.name)
+      switch(category.name){
+          case "Puerto-Rican":
+            pieChartData["0"].color = category.value;
+            break;
+          case "Mexican":
+            pieChartData["1"].color = category.value;
+            break;
+          case "Cuban":
+            pieChartData["2"].color = category.value;
+            break;
+          case "Dominican":
+            pieChartData["3"].color = category.value;
+            break;
+          case "South American":
+            pieChartData["4"].color = category.value;
+            break;
+          case "Central American":
+            pieChartData["5"].color = category.value;
+            break;
+          case  "Other":
+            pieChartData["6"].color = category.value;
+            break;
+      }
+      // if (category.name == "Puerto-Rican"){
+      //   console.log("test_if")
+      //   pieChartData["0"].color = category.value;
+      //
+      // }
 
+    }
+  };
+
+  function getFeatureFill(metadata){
+    console.log("test1")
+    const categories = metadata.getCategories();
+    console.log("test2")
+    for (category of categories){
+      switch(category){
+        case category.name = "Purto-Rico":
+          console.log(category.value)
+          console.log("test3")
+          pieChartData["0"].color = category.value;
+          break;
+      }
+      // pieChartData["0"].color = featureEvent.data.pop_pr;
+      // pieChartData["1"].value = featureEvent.data.pop_mex;
+      // pieChartData["2"].value = featureEvent.data.pop_cub;
+      // pieChartData["3"].value = featureEvent.data.pop_dom;
+      // pieChartData["4"].value = featureEvent.data.pop_sa;
+      // pieChartData["5"].value = featureEvent.data.pop_ca;
+      // pieChartData["6"].value = featureEvent.data.pop_other;
     }
   }
 

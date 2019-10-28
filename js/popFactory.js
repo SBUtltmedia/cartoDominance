@@ -4,9 +4,9 @@ var popFactory =
       popUpCount : 0,
       newPopUp : function(areaname) {
         this.popUpCount++;
-        var popUp = $('<div/>',{id:`popUp${this.popUpCount}`,class:"popUp",style:"cursor:cell;",html:areaname});
+        var popUp = $('<div/>',{id:`popUp${this.popUpCount}`,class:"popUp",style:"cursor:cell; text-align:center;",html:areaname});
         var textDiv = $('<div/>',{id:'titleText',style:"text-align:center"});
-        var pieChart = $('<div/>',{id:`pieChart${this.popUpCount}`,style:"margin:0 300 0;display:block"});
+        var pieChart = $('<div/>',{id:`pieChart${this.popUpCount}`,style:"margin:auto; position:absolute; top: calc(50% - 150px); left: calc(50% - 200px); display:block; align-items:center"});
         var crossSVG = $(xCross);
         var pinSVG = $(SVGstr);
 
@@ -21,10 +21,9 @@ var popFactory =
         //---------------------\\
 
 
-        crossSVG.css("margin", "0 330 0");
-        crossSVG.css("display", "block");
+        crossSVG.css({"left":"94%","top":"2%","position":"absolute","display":"block"});
         pinSVG.attr("id", "pin_" + this.popUpCount);
-        pinSVG.css("margin", "-5 0 0");
+        pinSVG.css({"left":"2%","top":"94%","position":"absolute","display":"block"});
         pinSVG.css("display", "block");
         //---------------------\\
 
@@ -36,10 +35,6 @@ var popFactory =
         })
 
         pinSVG.on("click", function(evt) {
-          if ($(this).hasClass('pinned')) {
-            popUp.remove();
-            this.popUpCount--;
-          }
           $(this).toggleClass("pinned");
         })
         //---------------------\\
@@ -92,6 +87,7 @@ var popFactory =
       }
     }
 
+  // Configure pop up svgs
     var xCross = `<svg width="15px" height ="15px">
         <line x1="0" y1="0" x2="15px" y2="15px" style="stroke:#ff0000; stroke-width:1.5"></line>
         <line x1="0" y1="15px" x2="15px" y2="0" style="stroke:#ff0000; stroke-width:1.5"></line>
@@ -115,19 +111,20 @@ var popFactory =
 
 
     var pieChartData = [
-      {"label" : "Hispanic", "value" : 10, "color" : "#c18ce6"},
-      {"label" : "Non-Hispanic", "value" : 10, "color" : "#dbdbdb"},
-            {"label" : "Non-Hispanic", "value" : 10, "color" : "#dbdbdb"},
-                  {"label" : "Non-Hispanic", "value" : 10, "color" : "#dbdbdb"},
-                        {"label" : "Non-Hispanic", "value" : 10, "color" : "#dbdbdb"},
-                              {"label" : "Non-Hispanic", "value" : 10, "color" : "#dbdbdb"}
+      {"label" : "Puerto-Rican", "value" : 100, "color" : "#c18ce6"},
+      {"label" : "Mexican", "value" : 100, "color" : "#dbdbdb"},
+      {"label" : "Cuban", "value" : 100, "color" : "#dbdbdb"},
+      {"label" : "Dominican", "value" : 100, "color" : "#dbdbdb"},
+      {"label" : "South American", "value" : 100, "color" : "#dbdbdb"},
+      {"label" : "Central American", "value" : 100, "color" : "#dbdbdb"},
+      {"label" : "Other", "value" : 100, "color" : "#dbdbdb"}
 
     ];
     var tP = 33333;
 
     var pieConfig = {
       "header" : {
-        "title" : {"text" : "Total Population", "fontSize" : 8},
+        "title" : {"text" : "Latino Population", "fontSize" : 10 },
         "subtitle" :
             {"text" : "", "color" : "#000", "fontSize" : 12, "font" : "open sans"},
         "location" : "pie-center",
@@ -135,19 +132,19 @@ var popFactory =
       },
 
       "size" : {
-        "canvasHeight" : 225,
-        "canvasWidth" : 345,
-        "pieInnerRadius" : "65%",
-        "pieOuterRadius" : "80%"
+        "canvasHeight" : 300,
+        "canvasWidth" : 400,
+        "pieInnerRadius" : "62%",
+        "pieOuterRadius" : "70%"
       },
       "data" : {"sortOrder" : "label-desc", "content" : pieChartData},
       "labels" : {
-        "outer" : {"format" : "label-value2", "pieDistance" : 20},
-        "mainLabel" : {"fontSize" : 10},
+        "outer" : {"format" : "label-value2", "pieDistance" : 10},
+        "mainLabel" : {"fontSize" : 8},
         "percentage" : {"color" : "#000", "fontSize" : 11, "decimalPlaces" : 0},
-        "value" : {"color" : "#000", "fontSize" : 11},
+        "value" : {"color" : "#000", "fontSize" : 8},
         "lines" : {"enabled" : true, "color" : "#777777"},
-        "truncation" : {"enabled" : true}
+        "truncation" : {"enabled" : false}
       },
       "effects" : {
         "load" : {"speed" : 750},
