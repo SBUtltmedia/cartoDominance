@@ -1,4 +1,5 @@
 
+var map;
 document.addEventListener("DOMContentLoaded", init);
 
 // function reports window size used to resize when window extent changes
@@ -15,7 +16,7 @@ function init(){
 
   window.onresize = reportWindowSize; //runs function each time window resizes
 
-  const  map = L.map('map', {doubleClickZoom:false}).setView([40.789142, -73.064961],10);
+  map = L.map('map', {doubleClickZoom:false}).setView([40.789142, -73.064961],10);
 
   const bounds = L.latLngBounds([ 41.394543, -70.684156 ], [ 40.370698, -75.346929 ]);
 
@@ -26,7 +27,12 @@ function init(){
   map.setMaxZoom(15);
 
   //L.doubleClickZoom(false);
-
+  var svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svgElement.setAttribute('xmlns', "http://www.w3.org/2000/svg");
+  svgElement.setAttribute('viewBox', "0 0 200 200");
+  svgElement.innerHTML = '<rect width="200" height="200"/>';
+  var svgElementBounds = [[  41.394543, -70.684156 ], [ 40.370698, -75.346929 ]];
+  L.svgOverlay(svgElement, svgElementBounds).addTo(map);
   L.tileLayer('http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png',
   {}).addTo(map);
 
@@ -45,15 +51,14 @@ function init(){
      t.v00003::numeric as non_latino_pop, t.v01001::numeric as pop_pr,
      t.v01002::numeric as pop_mex, t.v01003::numeric as pop_cub, t.v01004::numeric as pop_other,
      t.v01005::numeric as pop_dom, t.v01006::numeric as pop_ca, t.v01007::numeric as pop_sa,
-     CASE
-        WHEN greatest(t.v01001, t.v01002, t.v01003, t.v01004, t.v01005, t.v01006, t.v01007) = t.v01001 THEN round( t.v01001::numeric / t.v00002::numeric, 2)
-        WHEN greatest(t.v01001, t.v01002, t.v01003, t.v01004, t.v01005, t.v01006, t.v01007) = t.v01002 THEN round( t.v01002::numeric / t.v00002::numeric, 2)
-        WHEN greatest(t.v01001, t.v01002, t.v01003, t.v01004, t.v01005, t.v01006, t.v01007) = t.v01003 THEN round( t.v01003::numeric / t.v00002::numeric, 2)
-        WHEN greatest(t.v01001, t.v01002, t.v01003, t.v01004, t.v01005, t.v01006, t.v01007) = t.v01004 THEN round( t.v01004::numeric / t.v00002::numeric, 2)
-        WHEN greatest(t.v01001, t.v01002, t.v01003, t.v01004, t.v01005, t.v01006, t.v01007) = t.v01005 THEN round( t.v01005::numeric / t.v00002::numeric, 2)
-        WHEN greatest(t.v01001, t.v01002, t.v01003, t.v01004, t.v01005, t.v01006, t.v01007) = t.v01006 THEN round( t.v01006::numeric / t.v00002::numeric, 2)
-        WHEN greatest(t.v01001, t.v01002, t.v01003, t.v01004, t.v01005, t.v01006, t.v01007) = t.v01007 THEN round( t.v01007::numeric / t.v00002::numeric, 2)
-      END as relative_dom,
+    round( t.v00002::numeric / t.v00001::numeric * 100, 1) as pct_latino,
+    round( t.v01001::numeric / t.v00001::numeric * 100, 1) as pct_pr,
+    round( t.v01002::numeric / t.v00001::numeric * 100, 1) as pct_mex,
+    round( t.v01003::numeric / t.v00001::numeric * 100, 1) as pct_cub,
+    round( t.v01004::numeric / t.v00001::numeric * 100, 1) as pct_other,
+    round( t.v01005::numeric / t.v00001::numeric * 100, 1) as pct_dom,
+    round( t.v01006::numeric / t.v00001::numeric * 100, 1) as pct_ca,
+    round( t.v01007::numeric / t.v00001::numeric * 100, 1) as pct_sa,
       CASE
         WHEN greatest(t.v01001, t.v01002, t.v01003, t.v01004, t.v01005, t.v01006, t.v01007) = t.v01001 THEN 'Puerto-Rican'
         WHEN greatest(t.v01001, t.v01002, t.v01003, t.v01004, t.v01005, t.v01006, t.v01007) = t.v01002 THEN 'Mexican'
@@ -64,27 +69,84 @@ function init(){
         WHEN greatest(t.v01001, t.v01002, t.v01003, t.v01004, t.v01005, t.v01006, t.v01007) = t.v01007 THEN 'South American'
       END as dominant_origin
     FROM tract_2017 g INNER JOIN li_tract_2017 t ON g.gisjoin = t.gisjoin
-    WHERE t.v00001::numeric > 0 AND t.v00002::numeric > 0
+    WHERE t.v00001::numeric > 0
 
   `);
 
 
   const dominanceStyle = new carto.style.CartoCSS(`
          #layer {
-           polygon-fill: ramp([dominant_origin],(#88CCEE,#CC6677,#DDCC77,#117733,#332288,#AA4499,#44AA99),
+           polygon-fill: ramp([dominant_origin],(#F00,#0F0,#00F,#FF0,#0FF,#F0F,#CCC),
            category(7), "=");
-           polygon-opacity: ramp([relative_dom], (.2, .4, .6, .8, 1), jenks(5));
-         }
+           polygon-opacity: .5;
+           polygon-comp-op: lighten;
 
+         }
+         #layer::outline {
+           line-width: 0.5;
+           line-color: #FFF;
+           line-opacity: 1;
+         }
        `);
 
   const dominanceLayer = new carto.layer.Layer(dominanceDataQuery, dominanceStyle,
-    {featureClickColumns: ['dominant_origin', 'areaname','total_pop', 'pop_pr', 'pop_mex', 'pop_cub', 'pop_dom',
+    {featureClickColumns: ['dominant_origin', 'pct_latino', 'pct_pr', 'pct_mex',
+                           'pct_cub', 'pct_other', 'pct_ca', 'pct_sa' ,'areaname',
+                           'total_pop', 'pop_pr', 'pop_mex', 'pop_cub', 'pop_dom',
                            'pop_sa', 'pop_ca', 'pop_other', 'non_latino_pop', 'latino_pop'
                          ]}
   );
 
-  client.addLayer(dominanceLayer);
+  const dominanceIntensityQuery = new carto.source.SQL(`
+
+    SELECT cartodb_id, the_geom, the_geom_webmercator, pct_pr, pct_sa, pct_ca,
+    pct_cub, pct_dom, pct_mex, pct_other, pct_latino, dominant_origin,
+    CASE
+      WHEN dominant_origin = 'Puerto-Rican' THEN pct_pr
+      WHEN dominant_origin = 'Mexican' THEN pct_mex
+      WHEN dominant_origin = 'Cuban' THEN pct_cub
+      WHEN dominant_origin = 'Other' THEN pct_other
+      WHEN dominant_origin = 'Dominican' THEN pct_dom
+      WHEN dominant_origin = 'Central American' THEN pct_ca
+      WHEN dominant_origin = 'South American' THEN pct_sa
+    END as intensity
+    FROM dominance2017
+
+    `);
+
+    const intensityStyle = new carto.style.CartoCSS(`
+      #layer {
+        polygon-fill: ramp([intensity], colorbrewer(Greys),
+        quantiles(5));
+        polygon-opacity: .2;
+
+      }
+      #layer::outline {
+        line-width: 0.5;
+        line-color: #FFF;
+        line-opacity: 1;
+      }
+    `);
+
+    const intensityLayer = new carto.layer.Layer(dominanceIntensityQuery, intensityStyle);
+
+    // #layer {
+    //   polygon-fill: ramp([intensity], (#000000, #CCCCCC, #000000, #999999, #666666, #333333),
+    //   quantiles(5));
+    // }
+    // #layer::outline {
+    //   line-width: 0.5;
+    //   line-color: #FFF;
+    //   line-opacity: 1;
+    // }
+
+//
+   //
+   // client.addLayer(dominanceLayer);
+   //
+   // client.addLayer(intensityLayer);
+
+   client.addLayers([intensityLayer, dominanceLayer]);
 
   client.getLeafletLayer().addTo(map);
 

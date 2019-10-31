@@ -1,11 +1,13 @@
 
 * {
   box-sizing: border-box;
+
 }
 
 body {
   margin: 0;
   padding: 0;
+  overflow: hidden;
 }
 .pinned {
   fill: green;
@@ -35,12 +37,11 @@ h2{
 
 .legend ul {
   text-align: center;
-  background-color: none;
   border-style: solid;
-  padding-left: : 20px;
-  padding-right: : 10px;
-  padding-top: : 10px;
-  padding-bottom: : 10px;
+  padding-left: 25px;
+  padding-right:  10px;
+  padding-top: 20px;
+  padding-bottom: 20px;
   list-style-type: none;
 
 }
@@ -52,7 +53,7 @@ h2{
 }
 
 .category li {
-  margin-bottom: 8px;
+  /* margin-bottom: 8px; */
   display: flex;
   align-items: center;
   text-transform: uppercase;

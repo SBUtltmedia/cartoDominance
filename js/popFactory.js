@@ -6,7 +6,7 @@ var popFactory =
         this.popUpCount++;
         var popUp = $('<div/>',{id:`popUp${this.popUpCount}`,class:"popUp",style:"cursor:cell; text-align:center;",html:areaname});
         var textDiv = $('<div/>',{id:'titleText',style:"text-align:center"});
-        var pieChart = $('<div/>',{id:`pieChart${this.popUpCount}`,style:"margin:auto; position:absolute; top: calc(50% - 150px); left: calc(50% - 200px); display:block; align-items:center"});
+        var pieChart = $('<div/>',{id:`pieChart${this.popUpCount}`,style:"margin:auto; position:absolute; top: calc(50% - 150px); left: calc(50% - 250px); display:block; align-items:center"});
         var crossSVG = $(xCross);
         var pinSVG = $(SVGstr);
 
@@ -85,6 +85,7 @@ var popFactory =
         document.onmouseup = null;
         document.onmousemove = null;
       }
+
     }
 
   // Configure pop up svgs
@@ -133,15 +134,18 @@ var popFactory =
 
       "size" : {
         "canvasHeight" : 300,
-        "canvasWidth" : 400,
-        "pieInnerRadius" : "62%",
-        "pieOuterRadius" : "70%"
+        "canvasWidth" : 500,
+        "pieInnerRadius" : "55%",
+        "pieOuterRadius" : "78%"
       },
-      "data" : {"sortOrder" : "label-desc", "content" : pieChartData},
+      "data" : {"sortOrder" : "label-desc", "content" : pieChartData,
+      // "smallSegmentGrouping" : {"enabled" : true, "value" : 2, "valueType": "percentage", "label" : "test" }
+    },
       "labels" : {
         "outer" : {"format" : "label-value2", "pieDistance" : 10},
+        "inner" : {"hideWhenLessThanPercentage" : 1.5},
         "mainLabel" : {"fontSize" : 8},
-        "percentage" : {"color" : "#000", "fontSize" : 11, "decimalPlaces" : 0},
+        // "percentage" : {"color" : "#000", "fontSize" : 9, "decimalPlaces" : 0},
         "value" : {"color" : "#000", "fontSize" : 8},
         "lines" : {"enabled" : true, "color" : "#777777"},
         "truncation" : {"enabled" : false}
