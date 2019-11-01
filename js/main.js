@@ -68,10 +68,10 @@ function init(){
 
   `);
 
-
+  // style for dom layer; category ranks = [PR, SA, CA, DOM, MEX, Other, Cub ]
   const dominanceStyle = new carto.style.CartoCSS(`
          #layer {
-           polygon-fill: ramp([dominant_origin],(#88CCEE,#CC6677,#DDCC77,#117733,#332288,#AA4499,#44AA99),
+           polygon-fill: ramp([dominant_origin],(#88CCEE,#967bb6,#DDCC77,#8e1600,#ff764a,#121F26,#44AA99),
            category(7), "=");
            polygon-opacity: ramp([relative_dom], (.2, .4, .6, .8, 1), jenks(5));
          }
@@ -84,7 +84,17 @@ function init(){
                          ]}
   );
 
-  client.addLayer(dominanceLayer);
+  const li_bound_source = new carto.source.Dataset("li_bound_wgs84");
+
+  const li_bound_style = new carto.style.CartoCSS(`
+    #layer{
+      polygon-fill: #FFF;
+    }
+    `);
+
+  const li_bound_layer = new carto.layer.Layer(li_bound_source, li_bound_style);
+
+  client.addLayers([li_bound_layer, dominanceLayer]);
 
   client.getLeafletLayer().addTo(map);
 
@@ -176,12 +186,15 @@ function init(){
     });
   });
 
+
   function renderLegend(metadata){
     const categories = metadata.getCategories();
     for (category of categories){
       document.getElementById(category.name).innerHTML =
-      `<div  class ="bullet" style="background:${category.value}"></div> ${category.name}`;
+      `<div  class="bullet" style="background:${category.value}"></div> ${category.name}`;
       }
+      document.getElementById("No Data").innerHTML =
+      `<div class="bullet" style="background:#FFF"></div> No Data`;
     };
 
   function getFeatureFill(metadata){
