@@ -30,22 +30,45 @@
   <body>
     <div id="map"></div>
     <!-- Create HTML Element for Map Legend-->
-      <aside class = "toolbox">
-        <div class='legend'>
-          <h2>Long Island Latino Origins</h2>
-          <ul class = "category">
-            <li id = 'Puerto-Rican'></li>
-            <li id = 'Mexican'></li>
-            <li id = 'Cuban'></li>
-            <li id = 'Dominican'></li>
-            <li id = 'South American'></li>
-            <li id = 'Central American'></li>
-            <li id = 'Other'></li>
-            <li id = 'No Data'></li>
-          </ul>
-        </div>
-      </aside>
+    <div id ='legend'>
+      <h2 id = "legendTitle"> Origins</h2>
+      <ul id = "originClasses">
+        <li id = 'Puerto-Rican'></li>
+        <li id = 'Mexican'></li>
+        <li id = 'Cuban'></li>
+        <li id = 'Dominican'></li>
+        <li id = 'South American'></li>
+        <li id = 'Central American'></li>
+        <li id = 'Other'></li>
+        <li id = 'No Data'></li>
+      </ul>
+    </div>
     <div id="popUpHolder"></div>
-    <div id="dashboard"></div>
+    <div id="dashboard">
+      <h2 id = "dashTitle"> Long Island Latino Dominant Origins by Census Tract, 2017 </h2>
+      <p id = "appSummary">
+        A common misconception is that Latinos are a homogenous group of individuals sharing the same origin and culture, which
+        is not the case. Rather, Latinos are a radically heterogeneous group with respect to language, race, beliefs, traditions, culture, and national
+        origins. This mapping applications allows for the visualization and comparison of the differing groups which make up "Latinos" by census tract
+        and other aggregations. Tracts are colored according to the "dominant" origin within that tract. The more dominant an origin is with respect to
+        total latino population of a tract group, the darker the color appears. Click on different census tracts to compare!
+        <br>
+        <br> ** Note: Development of this application is on-going. Future updates will add increased functionality and data!
+      </p>
+      <div id = "selector_container">
+        <div id = "selector_menu">
+          <div>
+            <label for = "layer_selector"> Select Different Layers Showing Municipal Bounds </label>
+            <select id = "layer_selector" class = "selector">
+              <option disabled selected value> -- Select a Layer -- </option>
+              <option value = "layersOff"> Turn Layers Off </option>
+              <option value = "villages"> LI Villages </option>
+              <option value = "cityTowns"> LI Cities & Towns </option>
+              <option value = "counties"> LI Counties </option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

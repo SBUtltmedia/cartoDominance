@@ -3,10 +3,11 @@ document.addEventListener("DOMContentLoaded", init);
 
 // function reports window size used to resize when window extent changes
 function reportWindowSize() {
-
   var elem = document.querySelector('html');
-  elem.style.fontSize = `${window.innerHeight/75}px`;
+console.log(window.innerHeight)
+  elem.style.fontSize = `${window.innerWidth/75}px`;
 }
+
 
 
 function init(){
@@ -30,10 +31,10 @@ function init(){
   L.tileLayer('http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png',
   {}).addTo(map);
 
-    var client = new carto.Client({
-    apiKey: "6835ac33fdea1831afbabcc40bb7e09468c6945a",
-    username: "latinos",
-    serverUrl: "http://app2.gss.stonybrook.edu/user/latinos"
+  const client = new carto.Client({
+  apiKey: "6835ac33fdea1831afbabcc40bb7e09468c6945a",
+  username: "latinos",
+  serverUrl: "http://app2.gss.stonybrook.edu/user/latinos"
   });
 
 
@@ -94,41 +95,85 @@ function init(){
 
   const li_bound_layer = new carto.layer.Layer(li_bound_source, li_bound_style);
 
-  client.addLayers([li_bound_layer, dominanceLayer]);
+  const li_village_source = new carto.source.Dataset("li_villages_wgs84");
+
+  const li_village_style = new carto.style.CartoCSS(`
+    #layer{
+      line-color:#808080;
+      line-width: 1px;
+    }
+    `);
+
+  const li_village_layer = new carto.layer.Layer(li_village_source, li_village_style, {visible:false});
+
+  const li_cityTown_source = new carto.source.Dataset("li_cities_towns_wgs84");
+
+  const li_cityTown_style = new carto.style.CartoCSS(`
+    #layer{
+      line-color:#808080;
+      line-width: 1px;
+    }
+    `);
+
+  const li_cityTown_layer = new carto.layer.Layer(li_cityTown_source, li_cityTown_style, {visible:false});
+
+  const li_counties_source = new carto.source.Dataset("li_counties_wgs84");
+
+  const li_counties_style = new carto.style.CartoCSS(`
+    #layer{
+      line-color:#808080;
+      line-width: 1px;
+    }
+    `);
+
+  const li_counties_layer = new carto.layer.Layer(li_counties_source, li_counties_style, {visible:false});
+
+  client.addLayers([li_bound_layer, dominanceLayer, li_village_layer, li_cityTown_layer, li_counties_layer]);
 
   client.getLeafletLayer().addTo(map);
 
+  function toggleLayer(layer){
+    switch(layer.isHidden()){
+      case true:
+        layer.show();
+        break;
+      case false:
+        layer.hide();
+    }
+  };
+
+  var layerChange = {
+
+    layersOff: function(){
+      li_cityTown_layer.hide();
+      li_village_layer.hide();
+      li_counties_layer.hide();
+    },
+
+    villages: function(){
+      li_cityTown_layer.hide();
+      li_counties_layer.hide();
+      toggleLayer(li_village_layer);
+    },
+
+    cityTowns: function(){
+      li_village_layer.hide();
+      li_counties_layer.hide();
+      toggleLayer(li_cityTown_layer);
+    },
+
+    counties: function(){
+      li_village_layer.hide();
+      li_cityTown_layer.hide();
+      toggleLayer(li_counties_layer);
+    }
+  };
+
+  $(`#layer_selector`).change(function(){
+    layerChange[$(this).val()]();
+  });
 
 
-//  The below commented out lines generate a leaflet popUp
-//   dominanceLayer.on('featureClicked', featureEvent => {
-// console.log(featureEvent)
-//     var popup = L.popup();
-//
-//     d3.select("leaflet-popup-content-wrapper").style("background-color", "blue");
-//
-//     popup.setLatLng(featureEvent.latLng);
-//
-//     if (!popup.isOpen()){
-//
-//       popup.setContent(
-//
-//          "Dominant Origin: " + "<strong>" + featureEvent.data.dominant_origin + "</strong>"+
-//          "<br> Percent Latino: " + featureEvent.data.pct_latino + "%" +
-//          "<br> Percent Puerto Rican: " + featureEvent.data.pct_pr + "%" +
-//          "<br> Percent Mexican: " + featureEvent.data.pct_mex + "%" +
-//          "<br> Percent Cuban: " + featureEvent.data.pct_cub + "%" +
-//          "<br> Percent Other: " + featureEvent.data.pct_other + "%" +
-//          "<br> Percent Central American: " + featureEvent.data.pct_ca + "%" +
-//          "<br> Percent South American: " + featureEvent.data.pct_sa + "%"
-//
-//       );
-//
-//       popup.openOn(map);
-//
-//     };
-//
-//   });
 
   // render pop up when feature of dominance layer is clicked
   dominanceLayer.on('featureClicked',(f)=>clickedOnFeature(f));

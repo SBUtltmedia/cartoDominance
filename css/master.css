@@ -15,66 +15,104 @@ body {
 
 #map {
   position:absolute;
-  height: 93%;
-  width: 90%;
-  top: 7%;
-  bottom: 0;
-  left: 10%;
+  height: 100%;
+  width: 85%;
+  top: 0%;
+  bottom: 0%;
+  left: 15%;
+  right: 15%;
   padding: 0;
   margin: 0;
   z-index: 1;
 }
 
 #dashboard {
-  top: 7%;
-  width: 10%;
-  height: 94%;
+  top: 0%;
+  width: 15%;
+  height: 100%;
   padding: 0;
   margin: 0;
   background: #808080;
   position: absolute;
   bottom: 0;
   overflow: auto;
-  border-right: 1px solid black;
-}
-aside.toolbox  {
-  position: absolute;
-  bottom: 125px;
-  right: 50px;
-  height: 250px;
-  width: 300px;
-  z-index: 2;
+  border-right: .1rem solid black;
+  font-family: sans-serif;
+  font-size: .75rem;
 }
 
-h2{
+#dashTitle {
+  font-size: 1rem;
+  text-align: center;
+}
+
+#appSummary {
+  margin: .5rem;
+  font-size: .5rem;
+}
+
+#selector_container{
+  margin: 1rem;
+}
+
+#select_menu{
+  display: inline-block;
+}
+
+#layer_selector{
+  padding-bottom: 1rem;
+  font-size: .5rem;
+}
+
+.selector{
+  margin-right: 1rem;
+}
+
+
+
+#legend{
+  font-family: sans-serif;
+  border: .1rem solid black;
+  background: #808080;
+  padding: 0;
+  margin: 0;
+  position: absolute;
+  right:2.5%;
+  bottom:5%;
+  z-index: 2;
+  overflow:hidden;
+
+}
+
+#legendTitle{
   text-align:center;
   text-transform:uppercase;
-  font-size: 1em;
+  text-decoration: underline;
+  font-size: .6rem;
 }
 
-.legend ul {
+#originClasses {
+  margin: .5rem;
+  padding: 0rem;
   text-align: center;
-  border-style: solid;
-  padding-left: 25px;
-  padding-right:  10px;
-  padding-top: 20px;
-  padding-bottom: 20px;
   list-style-type: none;
 
+}
+
+#originClasses li {
+  margin-bottom: 6px;
+  font-size:.4rem;
+  display: flex;
+  align-items: center;
+  text-transform: capitalize;
 }
 
 .bullet {
   width: .75rem;
   height: .5rem;
-  margin-right: 8px;
+  margin-right: .5rem;
 }
 
-.category li {
-  /* margin-bottom: 8px; */
-  display: flex;
-  align-items: center;
-  text-transform: uppercase;
-}
 .popUp {
   text-transform: uppercase;
   position: absolute;
