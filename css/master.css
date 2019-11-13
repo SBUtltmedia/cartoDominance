@@ -84,6 +84,7 @@ body {
 
 }
 
+
 #legendTitle{
   text-align:center;
   text-transform:uppercase;
@@ -107,10 +108,26 @@ body {
   text-transform: capitalize;
 }
 
-.bullet {
+#categoryTitle{
+  margin-top: 5px;
+  margin-bottom: 2px;
+  font-size: .5rem;
+  text-align:center;
+}
+
+
+
+#Cuban #cb1{
+  background-color: blue;
+}
+
+.classBreak{
   width: .75rem;
   height: .5rem;
-  margin-right: .5rem;
+  border-width: 1px;
+  border-color: #fff;
+  border-style: solid;
+  box-sizing: border-box;
 }
 
 .popUp {

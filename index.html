@@ -25,7 +25,9 @@
     <link rel="stylesheet" href="css/master.css">
     <!-- Main JS script and popFactory object -->
     <script src="js/main.js" charset="utf-8"></script>
+    <script src="js/jenks.js"></script>
     <script src="js/popFactory.js" charset="utf-8"></script>
+    <script src="js/hslToHex.js" charset="utf-8"></script>
   </head>
   <body>
     <div id="map"></div>
@@ -33,14 +35,62 @@
     <div id ='legend'>
       <h2 id = "legendTitle"> Origins</h2>
       <ul id = "originClasses">
-        <li id = 'Puerto-Rican'></li>
-        <li id = 'Mexican'></li>
-        <li id = 'Cuban'></li>
-        <li id = 'Dominican'></li>
-        <li id = 'South American'></li>
-        <li id = 'Central American'></li>
-        <li id = 'Other'></li>
-        <li id = 'No Data'></li>
+        <h3 id = "categoryTitle"> Puerto-Rican </h3>
+        <li id = 'Puerto-Rican'>
+          <div class = "classBreak" id = "cb1"></div>
+          <div class = "classBreak" id = "cb2"></div>
+          <div class = "classBreak" id = "cb3"></div>
+          <div class = "classBreak" id = "cb4"></div>
+          <div class = "classBreak" id = "cb5"></div>
+        </li>
+        <h3 id = "categoryTitle"> South American </h3>
+        <li id = 'South American'>
+          <div class = "classBreak" id = "cb1"></div>
+          <div class = "classBreak" id = "cb2"></div>
+          <div class = "classBreak" id = "cb3"></div>
+          <div class = "classBreak" id = "cb4"></div>
+          <div class = "classBreak" id = "cb5"></div>
+        </li>
+        <h3 id = "categoryTitle"> Central American </h3>
+        <li id = 'Central American'>
+          <div class = "classBreak" id = "cb1"></div>
+          <div class = "classBreak" id = "cb2"></div>
+          <div class = "classBreak" id = "cb3"></div>
+          <div class = "classBreak" id = "cb4"></div>
+          <div class = "classBreak" id = "cb5"></div>
+       </li>
+       <h3 id = "categoryTitle"> Dominican </h3>
+       <li id = 'Dominican'>
+         <div class = "classBreak" id = "cb1"></div>
+         <div class = "classBreak" id = "cb2"></div>
+         <div class = "classBreak" id = "cb3"></div>
+         <div class = "classBreak" id = "cb4"></div>
+         <div class = "classBreak" id = "cb5"></div>
+       </li>
+       <h3 id = "categoryTitle"> Mexican </h3>
+       <li id = 'Mexican'>
+         <div class = "classBreak" id = "cb1"></div>
+         <div class = "classBreak" id = "cb2"></div>
+         <div class = "classBreak" id = "cb3"></div>
+         <div class = "classBreak" id = "cb4"></div>
+         <div class = "classBreak" id = "cb5"></div>
+       </li>
+       <h3 id = "categoryTitle"> Other </h3>
+       <li id = 'Other'>
+         <div class = "classBreak" id = "cb1"></div>
+         <div class = "classBreak" id = "cb2"></div>
+         <div class = "classBreak" id = "cb3"></div>
+         <div class = "classBreak" id = "cb4"></div>
+         <div class = "classBreak" id = "cb5"></div>
+       </li>
+       <h3 id = "categoryTitle"> Cuban </h3>
+       <li id = 'Cuban'>
+         <div class = "classBreak" id = "cb1"></div>
+         <div class = "classBreak" id = "cb2"></div>
+         <div class = "classBreak" id = "cb3"></div>
+         <div class = "classBreak" id = "cb4"></div>
+         <div class = "classBreak" id = "cb5"></div>
+       </li>
       </ul>
     </div>
     <div id="popUpHolder"></div>
