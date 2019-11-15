@@ -16,13 +16,13 @@ function init() {
 
   const map = L.map('map', {
     doubleClickZoom: false
-  }).setView([40.789142, -73.064961], 10);
+  }).setView([41.00, -73.00], 10);
 
   const bounds = L.latLngBounds([41.394543, -70.684156], [40.370698, -75.346929]);
 
   map.setMaxBounds(bounds);
 
-  map.setMinZoom(10);
+  map.setMinZoom(8);
 
   map.setMaxZoom(15);
 
@@ -205,7 +205,7 @@ function init() {
 
     pieChartColorStruct  =  {"label" :originInfoKey, "value" : 100, "color" :colorStringArray[parseInt(rampCount/2)] }
 
-    var header = ($('<h3/>', {
+    var header = ($('<h4/>', {
       html: originInfoKey,
       id: 'categoryTitle'
     }));
@@ -268,9 +268,18 @@ console.log(popFactory.pieChartData)
   const li_village_source = new carto.source.Dataset("li_villages_wgs84");
 
   const li_village_style = new carto.style.CartoCSS(`
-    #layer{
-      line-color:#808080;
-      line-width: 1px;
+    ##layer{
+      line-color:#333333;
+      line-width: 2px;
+      ::labels{
+        text-face-name: 'DejaVu Sans Bold';
+        text-name:[name];
+        text-placement: point;
+        text-size: 12;
+        text-fill: #000;
+        text-halo-fill: #ffffff;
+        text-halo-radius: 2;
+      }
     }
     `);
 
@@ -282,8 +291,17 @@ console.log(popFactory.pieChartData)
 
   const li_cityTown_style = new carto.style.CartoCSS(`
     #layer{
-      line-color:#808080;
-      line-width: 1px;
+      line-color:#333333;
+      line-width: 2px;
+      ::labels{
+        text-face-name: 'DejaVu Sans Bold';
+        text-name:[name];
+        text-placement: point;
+        text-size: 16;
+        text-fill: #000;
+        text-halo-fill: #ffffff;
+        text-halo-radius: 2;
+      }
     }
     `);
 
@@ -295,8 +313,17 @@ console.log(popFactory.pieChartData)
 
   const li_counties_style = new carto.style.CartoCSS(`
     #layer{
-      line-color:#808080;
-      line-width: 1px;
+      line-color:#333333;
+      line-width: 2px;
+      ::labels{
+        text-face-name: 'DejaVu Sans Bold';
+        text-name:[name];
+        text-placement: point;
+        text-size: 24;
+        text-fill: #000;
+        text-halo-fill: #ffffff;
+        text-halo-radius: 2;
+      }
     }
     `);
 
