@@ -28,7 +28,10 @@ function init() {
 
   //L.doubleClickZoom(false);
 
-  L.tileLayer('http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', {}).addTo(map);
+  L.tileLayer('http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', {
+
+  }).addTo(map);
+
 
   const client = new carto.Client({
     apiKey: "6835ac33fdea1831afbabcc40bb7e09468c6945a",
@@ -105,8 +108,72 @@ function init() {
     WHERE t.v00001::numeric > 0 AND t.v00002::numeric > 0
 
   `);
+// Start bargraph creation
+  var AOI = 'New York';
+  console.log(AOI);
+
+  const dataviewQuery = new carto.source.SQL(`
+    SELECT d.*
+    FROM dominance2017 d, li_cities_towns_wgs84 g
+    WHERE ST_Within(ST_PointOnSurface(d.the_geom_webmercator), g.the_geom_webmercator) AND g.name = '${AOI}'
+    `);
+
+  const formulaDataview = new carto.dataview.Category(dataviewQuery, 'dominant_origin', {
+      operation: carto.operation.COUNT, // Compute the average
+      operationColumn: 'dominant_origin'
+    });
+
+  formulaDataview.on('dataChanged', data => {
+   names = [];
+   console.log(names);
+   values = [];
+   console.log(values)
+   for (category of data.categories){
+     values.push(category.value);
+     names.push(category.name);
+   }
+   barGraph(names);
+
+
+  });
+
+  client.addDataview(formulaDataview);
+
+function barGraph(names){
+
+  console.log(names);
+
+  var margin = {top: 35, right: 35, bottom: 35, left: 35},
+      width = 300 - margin.left - margin.right,
+      height = 225 - margin.top - margin.bottom;
+
+  var yScale = d3.scaleLinear()
+      .range([height, 0])
+      .domain([0, 100])
+
+  var xScale = d3.scaleBand()
+      .range([0, width])
+      .domain(names)
+      .padding(0.5)
+
+  var svg = d3.select('#barGraphContainer')
+      .append("svg") // adds svgs
+      .attr("width", width + margin.left + margin.right) //sets width of svg
+      .attr("height", height + margin.top + margin.bottom) //sets height of svgs
+      .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")" );
+
+  svg.append('g').call(d3.axisLeft(yScale));
+
+  svg.append('g').call(d3.axisBottom(xScale))
+      .attr('transform', `translate(0, ${height})`);
+};
+
+
+
+// End bargraph creation
+
   // Begin creation of CSS for dominanceLayer
-  var rampCount = 5;
 
 
 
@@ -123,7 +190,7 @@ function init() {
   var originInfo = {
     "Puerto-Rican": {
       colorInfo: {
-        h: 345,
+        h: 35,
         s: 44
       },
       tableInfo: {
@@ -133,8 +200,8 @@ function init() {
     },
     "South American": {
       colorInfo: {
-        h: 204,
-        s: 60
+        h: 31,
+        s: 88
       },
       tableInfo: {
         variableID: "v01007",
@@ -163,8 +230,8 @@ function init() {
     },
     "Mexican": {
       colorInfo: {
-        h: 31,
-        s: 88
+        h: 204,
+        s: 60
       },
       tableInfo: {
         variableID: "v01002",
@@ -173,8 +240,8 @@ function init() {
     },
     "Cuban": {
       colorInfo: {
-        h: 35,
-        s: 37
+        h: 345,
+        s: 44
       },
       tableInfo: {
         variableID: "v01003",
@@ -194,7 +261,9 @@ function init() {
   };
 
 
-  originRamp = Array.from(Array(rampCount), (x, index) => 75 - index * 10)
+  var rampCount = 3;
+  originRamp = Array.from(Array(rampCount), (x, index) => 80 - index * 10)
+  console.log(originRamp);
 
   colorStruct = Object.keys(originInfo).map((originInfoKey, infoIndex) => {
 
@@ -269,16 +338,16 @@ console.log(popFactory.pieChartData)
 
   const li_village_style = new carto.style.CartoCSS(`
     ##layer{
-      line-color:#333333;
-      line-width: 2px;
+      line-color:#fff;
+      line-width: 1px;
       ::labels{
-        text-face-name: 'DejaVu Sans Bold';
+        text-face-name: 'DejaVu Serif Book';
         text-name:[name];
         text-placement: point;
         text-size: 12;
-        text-fill: #000;
+        text-fill: #676767;
         text-halo-fill: #ffffff;
-        text-halo-radius: 2;
+        text-halo-radius: 1;
       }
     }
     `);
@@ -291,16 +360,16 @@ console.log(popFactory.pieChartData)
 
   const li_cityTown_style = new carto.style.CartoCSS(`
     #layer{
-      line-color:#333333;
-      line-width: 2px;
+      line-color:#FFF;
+      line-width: .5px;
       ::labels{
-        text-face-name: 'DejaVu Sans Bold';
+        text-face-name: 'DejaVu Serif Book';
         text-name:[name];
         text-placement: point;
-        text-size: 16;
-        text-fill: #000;
+        text-size: 12;
+        text-fill: #676767;
         text-halo-fill: #ffffff;
-        text-halo-radius: 2;
+        text-halo-radius: 1;
       }
     }
     `);
@@ -313,16 +382,16 @@ console.log(popFactory.pieChartData)
 
   const li_counties_style = new carto.style.CartoCSS(`
     #layer{
-      line-color:#333333;
-      line-width: 2px;
+      line-color:#fff;
+      line-width: .5px;
       ::labels{
-        text-face-name: 'DejaVu Sans Bold';
+        text-face-name: 'DejaVu Serif Book';
         text-name:[name];
         text-placement: point;
-        text-size: 24;
-        text-fill: #000;
+        text-size: 16;
+        text-fill: #676767;
         text-halo-fill: #ffffff;
-        text-halo-radius: 2;
+        text-halo-radius: 1;
       }
     }
     `);

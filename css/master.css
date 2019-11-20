@@ -61,9 +61,9 @@ body {
 }
 
 #layer_selector{
-  padding-bottom: 1rem;
   font-size: .4rem;
 }
+
 
 .selector{
   margin-right: 1rem;
@@ -96,6 +96,7 @@ body {
 #originClasses {
   margin: .5rem;
   padding: 0rem;
+  width: 77px;
   text-align: center;
   list-style-type: none;
 
@@ -119,9 +120,6 @@ body {
 .classBreak{
   width: .75rem;
   height: .5rem;
-  border-width: 1px;
-  border-color: #fff;
-  border-style: solid;
   box-sizing: border-box;
 }
 

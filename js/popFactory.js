@@ -99,9 +99,9 @@ console.log(popFactory.popUpCount)
         "fontSize": 10
       },
       "subtitle": {
-        "text": "",
+        "text": "Total Latino Population",
         "color": "#000",
-        "fontSize": 12,
+        "fontSize": 7,
         "font": "open sans"
       },
       "location": "pie-center",
