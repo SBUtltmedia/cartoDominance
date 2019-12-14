@@ -14,6 +14,7 @@
     <!-- Include Leaflet -->
     <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"></script>
     <link href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" rel="stylesheet">
+    <script src="js/leaflet-side-by-side.js"></script>
     <!-- Include CARTO.js -->
     <script src="https://cartodb-libs.global.ssl.fastly.net/carto.js/v4.1.11/carto.min.js"></script>
     <!-- <link href="https://carto.com/developers/carto-js/examples/maps/public/style.css" rel="stylesheet">  -->
@@ -25,7 +26,6 @@
     <link rel="stylesheet" href="css/master.css">
     <!-- Main JS script and popFactory object -->
     <script src="js/main.js" charset="utf-8"></script>
-    <script src="js/jenks.js"></script>
     <script src="js/popFactory.js" charset="utf-8"></script>
     <script src="js/hslToHex.js" charset="utf-8"></script>
   </head>
@@ -39,12 +39,6 @@
     <div id="popUpHolder"></div>
     <div id="dashboard">
       <h2 id = "dashTitle"> Long Island Latino Dominant Origins by Census Tract, 2017 </h2>
-      <p id = "appSummary">
-        A common misconception is that Latinos are a homogenous group of individuals sharing the same origin and culture, which
-        is not the case. This applications allows for the visualization and comparison of the differing groups which make up "Latinos" by census tract
-        and other aggregations. Tracts are colored according to the "dominant" origin within that tract. The more dominant an origin is with respect to
-        the total latino population of the tract, the darker the color.
-      </p>
       <div id = "selector_container">
         <div id = "selector_menu">
           <div>
@@ -58,8 +52,6 @@
             </select>
           </div>
         </div>
-      </div>
-      <div id = "barGraphContainer">
       </div>
     </div>
   </body>
