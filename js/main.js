@@ -489,8 +489,26 @@ popFactory.pieChartData= colorStruct.map(item => item[2]);
   // End logic that controls layer selector
 
   // render pop up when feature of dominance layer is clicked
-  dominanceLayer2010.on('featureClicked', (f) => clickedOnFeature(f));
-  dominanceLayer2017.on('featureClicked', (f) => clickedOnFeature(f));
+
+  var sliderOffset = 0
+  var currentMousePos = 0
+  $('#map').mousemove(function(event){
+    currentMousePos = event.pageX
+    sliderOffset = $('.leaflet-sbs-divider').offset().left;
+  });
+
+  dominanceLayer2010.on('featureClicked', featureEvent => {
+    if (currentMousePos < sliderOffset){
+      clickedOnFeature(featureEvent)
+    }
+  });
+
+  dominanceLayer2017.on('featureClicked', featureEvent => {
+    if (currentMousePos > sliderOffset){
+      clickedOnFeature(featureEvent)
+    }
+  });
+
 
   //functions removes popups that are not pinned when a new child is open
   function clickedOnFeature(featureEvent) {
