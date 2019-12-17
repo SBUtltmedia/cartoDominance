@@ -92,7 +92,15 @@ function init() {
       `WHEN greatest(t.v01001, t.v01002, t.v01003, t.v01004, t.v01005, t.v01006, t.v01007) = t.${domOrigin} THEN ${origin} `]
   });
 
-  function createQuery(year){
+  var varList = ['t.v01001', 't.v01002', 't.v01003', 't.v01004', 't.v01005', 't.v01006', 't.v01007'] // Represents the full amount of variables
+  function createQuery(year, varList){
+    varArgs = Array.prototype.slice.call(varList) // is this nessecary? Supplying varList directly works, but not sure if that effects anything.
+    let caseBlocks = Object.keys(latinoOrigins).map((originKey) => {
+      domOrigin =latinoOrigins[originKey].variableID
+      origin = latinoOrigins[originKey].origin
+      return [`WHEN greatest(${varArgs.join()}) = t.${domOrigin} THEN round(t.${domOrigin} ::numeric / t.v00002::numeric, 2)`,
+        `WHEN greatest(${varArgs.join()}) = t.${domOrigin} THEN ${origin} `]
+    });
 
     let dominanceQuery = `
     SELECT g.cartodb_id, g.gisjoin, g.the_geom, g.the_geom_webmercator, t.year,
@@ -114,9 +122,17 @@ function init() {
   }
 
 
-  const dominanceDataQuery2017= new carto.source.SQL(createQuery(2017));
+  const dominanceDataQuery2017= new carto.source.SQL(createQuery(2017, varList));
 
-  const dominanceDataQuery2010 = new carto.source.SQL(createQuery(2010));
+  const dominanceDataQuery2010 = new carto.source.SQL(createQuery(2010, varList));
+
+  const dominanceDataQuery1990 = new carto.source.SQL(createQuery(1990, varList));
+
+  const dominanceDataQuery1980 = new carto.source.SQL(createQuery(1980, varList.slice(0,3)));
+
+  const dominanceDataQuery1970 = new carto.source.SQL(createQuery(1970, varList.slice(0).push(varList[3])));
+
+  const dominanceDataQuery1960 = new carto.source.SQL(createQuery(1960, varList.slice(0)));
 
 
 
