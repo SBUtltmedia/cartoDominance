@@ -1,6 +1,7 @@
+
 document.addEventListener("DOMContentLoaded", init);
 
-// function reports window size used to resize when window extent changes
+// function reports window size, used to resize when window extent changes
 function reportWindowSize() {
   var elem = document.querySelector('html');
   elem.style.fontSize = `${window.innerWidth/75}px`;
@@ -10,13 +11,25 @@ function reportWindowSize() {
 
 function init() {
 
+// Reset selector dropdowns on page reload
+  $(window).on("pageshow", function() {
+      for (selector of ['#layer_selector', '#originLeftSelector', '#originRightSelector']){
+        $(selector).prop('selectedIndex', function () {
+            var selected = $(this).children('[selected]').index();
+            return selected != -1 ? selected : 0;
+        });
+      }
+  });
+
   reportWindowSize();
 
   window.onresize = reportWindowSize; //runs function each time window resizes
 
   const map = L.map('map', {
-    doubleClickZoom: false
-  }).setView([41.60, -72.95], 9);
+    zoomControl: false,
+    doubleClickZoom: false,
+    maxBoundsViscosity: 1.0
+  }).setView([40.50, -73.025], 10);
 
   const bounds = L.latLngBounds([41.394543, -70.684156], [40.370698, -75.346929]);
 
@@ -31,6 +44,8 @@ function init() {
   L.tileLayer('http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', {
 
   }).addTo(map);
+
+  L.control.scale().addTo(map);
 
 
 //  As far as I know we need two clients for the slider to work; but paul you should look into this? - CV 12/13/2019
@@ -84,125 +99,54 @@ function init() {
   ]
 
 
-// I started trying to make the queries more dynamic, work in progress - CV 12/13/2019
-  caseBlocks = Object.keys(latinoOrigins).map((originKey) => {
-    domOrigin =latinoOrigins[originKey].variableID
-    origin = latinoOrigins[originKey].origin
-    return [`WHEN greatest(t.v01001, t.v01002, t.v01003, t.v01004, t.v01005, t.v01006, t.v01007) = t.${domOrigin} THEN round(t.${domOrigin} ::numeric / t.v00002::numeric, 2)`,
-      `WHEN greatest(t.v01001, t.v01002, t.v01003, t.v01004, t.v01005, t.v01006, t.v01007) = t.${domOrigin} THEN ${origin} `]
-  });
 
-  var varList = ['t.v01001', 't.v01002', 't.v01003', 't.v01004', 't.v01005', 't.v01006', 't.v01007'] // Represents the full amount of variables
   function createQuery(year, varList){
-    varArgs = Array.prototype.slice.call(varList) // is this nessecary? Supplying varList directly works, but not sure if that effects anything.
+    varArgs = Array.prototype.slice.call(varList) // cast the variable arguments to a list again for use with list methods
     let caseBlocks = Object.keys(latinoOrigins).map((originKey) => {
       domOrigin =latinoOrigins[originKey].variableID
       origin = latinoOrigins[originKey].origin
-      return [`WHEN greatest(${varArgs.join()}) = t.${domOrigin} THEN round(t.${domOrigin} ::numeric / t.v00002::numeric, 2)`,
+      return [`WHEN greatest(${varArgs.join(",")}) = t.${domOrigin} THEN round(t.${domOrigin} ::numeric / t.v00002::numeric, 2)`,
         `WHEN greatest(${varArgs.join()}) = t.${domOrigin} THEN ${origin} `]
     });
 
     let dominanceQuery = `
     SELECT g.cartodb_id, g.gisjoin, g.the_geom, g.the_geom_webmercator, t.year,
-    t.areaname, t.v00001::numeric as total_pop, t.v00002::numeric as latino_pop,
-    t.v00003::numeric as non_latino_pop, t.v01001::numeric as pop_pr,
-    t.v01002::numeric as pop_mex, t.v01003::numeric as pop_cub, t.v01004::numeric as pop_other,
-    t.v01005::numeric as pop_dom, t.v01006::numeric as pop_ca, t.v01007::numeric as pop_sa,
+    t.areaname, t.v00001::numeric as total_pop, v00002::numeric as latino_pop,
+    ${varArgs.join("::numeric,")}::numeric,
     CASE
-      ${caseBlocks.map(item=>item[0]).join("\n")}
+    ${caseBlocks.map(item=>item[0]).join("\n")}
     END as relative_dom,
     CASE
-      ${caseBlocks.map(item=>item[1]).join("\n")}
+    ${caseBlocks.map(item=>item[1]).join("\n")}
     END as dominant_origin
-    FROM tract_2017 g INNER JOIN li_tract_${year} t ON g.gisjoin = t.gisjoin
+    FROM tract_${year} g INNER JOIN li_tract_${year} t ON g.gisjoin = t.gisjoin
     WHERE t.v00001::numeric > 0 AND t.v00002::numeric > 0`
 
     return dominanceQuery
 
-  }
+  };
 
+  function createLayer (year, varList){
 
-  const dominanceDataQuery2017= new carto.source.SQL(createQuery(2017, varList));
+    var dominanceDataQuery = new carto.source.SQL(createQuery(year, varList));
 
-  const dominanceDataQuery2010 = new carto.source.SQL(createQuery(2010, varList));
+    var dominanceStyle = new carto.style.CartoCSS(`
+           #layer{
+             polygon-gamma: 0.5;
+          ${colorStruct.map(item=>item[1]).join("\n")}
+             ::outline{
+               line-width: 0px;
+               line-opacity: 1;
+             }
+           }
+         `);
+    var clickColumns = Array.prototype.slice.call(varList).concat(['dominant_origin', 'areaname','total_pop', 'latino_pop']);
+    var dominanceLayer = new carto.layer.Layer(dominanceDataQuery, dominanceStyle, {
+     featureClickColumns: clickColumns
+   });
 
-  const dominanceDataQuery1990 = new carto.source.SQL(createQuery(1990, varList));
-
-  const dominanceDataQuery1980 = new carto.source.SQL(createQuery(1980, varList.slice(0,3)));
-
-  const dominanceDataQuery1970 = new carto.source.SQL(createQuery(1970, varList.slice(0).push(varList[3])));
-
-  const dominanceDataQuery1960 = new carto.source.SQL(createQuery(1960, varList.slice(0)));
-
-
-
-
-// Start bargraph creation; ignore this and below for now - Carl Vricella 12/3/2019
-// There will be a use for this, just not yet
-  // var AOI = 'New York';
-  //
-  //
-  // const dataviewQuery = new carto.source.SQL(`
-  //   SELECT d.*
-  //   FROM dominance2017 d, li_cities_towns_wgs84 g
-  //   WHERE ST_Within(ST_PointOnSurface(d.the_geom_webmercator), g.the_geom_webmercator) AND g.name = '${AOI}'
-  //   `);
-  //
-  // const formulaDataview = new carto.dataview.Category(dataviewQuery, 'dominant_origin', {
-  //     operation: carto.operation.COUNT, // Compute the average
-  //     operationColumn: 'dominant_origin'
-  //   });
-  //
-  // formulaDataview.on('dataChanged', data => {
-  //  names = [];
-  //  values = [];
-  //  for (category of data.categories){
-  //    values.push(category.value);
-  //    names.push(category.name);
-  //  }
-  //  // barGraph(names);
-  //
-  //
-  // });
-  //
-  // client.addDataview(formulaDataview);
-
-// function barGraph(names){
-//
-//   console.log(names);
-//
-//   var margin = {top: 35, right: 35, bottom: 35, left: 35},
-//       width = 300 - margin.left - margin.right,
-//       height = 225 - margin.top - margin.bottom;
-//
-//   var yScale = d3.scaleLinear()
-//       .range([height, 0])
-//       .domain([0, 100])
-//
-//   var xScale = d3.scaleBand()
-//       .range([0, width])
-//       .domain(names)
-//       .padding(0.5)
-//
-//   var svg = d3.select('#barGraphContainer')
-//       .append("svg") // adds svgs
-//       .attr("width", width + margin.left + margin.right) //sets width of svg
-//       .attr("height", height + margin.top + margin.bottom) //sets height of svgs
-//       .append("g")
-//       .attr("transform", "translate(" + margin.left + "," + margin.top + ")" );
-//
-//   svg.append('g').call(d3.axisLeft(yScale));
-//
-//   svg.append('g').call(d3.axisBottom(xScale))
-//       .attr('transform', `translate(0, ${height})`);
-// };
-
-
-
-// End bargraph creation
-
-  // Begin creation of CSS for dominanceLayer
-
+   return dominanceLayer
+ };
 
 
   var pieChartData = [
@@ -215,11 +159,13 @@ function init() {
     {"label" : "Other", "value" : 100, "color" : "#dbdbdb"}
 
   ];
+
+
   var originInfo = {
     "Puerto-Rican": {
       colorInfo: {
-        h: 35,
-        s: 44
+        h: 50,
+        s: 40
       },
       tableInfo: {
         variableID: "v01001",
@@ -289,9 +235,11 @@ function init() {
   };
 
 
-// Paul could you do me a favor and comment all this out? I more or less see what's going on, but the comments would help me learn it better - CV 12/13/2019
   var rampCount = 3;
+
+
   originRamp = Array.from(Array(rampCount), (x, index) => 80 - index * 10)
+
 
   colorStruct = Object.keys(originInfo).map((originInfoKey, infoIndex) => {
 
@@ -302,75 +250,64 @@ function init() {
 
     pieChartColorStruct  =  {"label" :originInfoKey, "value" : 100, "color" :colorStringArray[parseInt(rampCount/2)] }
 
-    var header = ($('<h4/>', {
+    var headerLeft = ($('<h4/>', {
       html: originInfoKey,
-      id: 'categoryTitle'
+      id: 'categoryTitleLeft'
     }));
-    var originListItem = $('<li/>', {
+
+    var headerRight = ($('<h4/>', {
+      html: originInfoKey,
+      id: 'categoryTitleRight'
+    }));
+
+    var originListItemLeft = $('<li/>', {
+      id: originInfoKey + "_left"
+    });
+
+    var originListItemRight = $('<li/>', {
       id: originInfoKey
     });
-    originListItem.append(originRamp.map((rampLightness, index) => {
+
+    originListItemLeft.append(originRamp.map((rampLightness, index) => {
       var hex = hslToHex(originColor.h, originColor.s, rampLightness)
       return $('<div/>', {
-        class: "classBreak",
-        id: `"cb${index}"`,
-        style: `background-color:${hex}`
+      class: "classBreak",
+      id: `"cb${index}"`,
+      style: `background-color:${hex}`
+    })
+  }))
+
+    originListItemRight.append(originRamp.map((rampLightness, index) => {
+      var hex = hslToHex(originColor.h, originColor.s, rampLightness)
+      return $('<div/>', {
+      class: "classBreak",
+      id: `"cb${index}"`,
+      style: `background-color:${hex}`
       })
+
     }))
-    return [header.add(originListItem), `[dominant_origin = "${originInfoKey}"]{
+
+    return [headerLeft.add(originListItemLeft),`[dominant_origin = "${originInfoKey}"]{
   polygon-fill: ramp([relative_dom], (${colorStringArray.join(',')}), jenks(${rampCount}));
 }
-`, pieChartColorStruct ]
+`, pieChartColorStruct, headerRight.add(originListItemRight)]
   })
 
 
-popFactory.pieChartData= colorStruct.map(item => item[2]);
-  $('#originClasses').html("").append(colorStruct.map(item => item[0]))
+  popFactory.pieChartData= colorStruct.map(item => item[2]);
 
-  const dominanceStyle2017 = new carto.style.CartoCSS(`
-         #layer{
-           polygon-gamma: 0.5;
-        ${colorStruct.map(item=>item[1]).join("\n")}
-           ::outline{
-             line-width: 0px;
-             line-opacity: 1;
-           }
-         }
+  // Use ColorStruct to Create legends
+  $('#originClassesLeft').html("").append( colorStruct.map(item => item[0]));
+  $('#originClassesRight').html("").append( colorStruct.map(item => item[3]));
 
 
-       `);
-       const dominanceStyle2010 = new carto.style.CartoCSS(`
-              #layer{
-                polygon-gamma: 0.5;
-             ${colorStruct.map(item=>item[1]).join("\n")}
-                ::outline{
-                  line-width: 0px;
-                  line-opacity: 1;
-                }
-              }
+  const varList = ['v01001', 'v01002', 'v01003', 'v01004', 'v01005', 'v01006', 'v01007'];
 
+  const dominanceLayer2017 = createLayer(2017, varList);
 
-            `);
+  const dominanceLayer2010 = createLayer(2010, varList);
 
-  // end creation of CSS for dominanceLayer
-
-
-
-
-
-
-  // Create Carto layers and add to map; This will need to be functionalized and/or make use of some iteration CV 12/13/2019
-  const dominanceLayer2017 = new carto.layer.Layer(dominanceDataQuery2017, dominanceStyle2017, {
-    featureClickColumns: ['dominant_origin', 'areaname', 'total_pop', 'pop_pr', 'pop_mex', 'pop_cub', 'pop_dom',
-      'pop_sa', 'pop_ca', 'pop_other', 'non_latino_pop', 'latino_pop'
-    ]
-  });
-
-  const dominanceLayer2010 = new carto.layer.Layer(dominanceDataQuery2010, dominanceStyle2010, {
-    featureClickColumns: ['dominant_origin', 'areaname', 'total_pop', 'pop_pr', 'pop_mex', 'pop_cub', 'pop_dom',
-      'pop_sa', 'pop_ca', 'pop_other', 'non_latino_pop', 'latino_pop'
-    ]
-  });
+  const dominanceLayer1990 = createLayer(1990, varList);
 
   const li_bound_source = new carto.source.Dataset("li_bound_wgs84");
 
@@ -384,7 +321,7 @@ popFactory.pieChartData= colorStruct.map(item => item[2]);
     visible: false
   });
 
-  const li_village_source = new carto.source.Dataset("li_villages_wgs84");
+  const li_village_source = new carto.source.Dataset('villages_hamlets_wgs84');
 
   const li_village_style = new carto.style.CartoCSS(`
     ##layer{
@@ -450,7 +387,7 @@ popFactory.pieChartData= colorStruct.map(item => item[2]);
     visible: false
   });
 
-// Add layers to both sides of the sliders - CV 12/13/2019
+  // Add layers to both sides of the sliders - CV 12/13/2019
   clientLeft.addLayers([li_bound_layer, dominanceLayer2010, li_village_layer, li_cityTown_layer, li_counties_layer]);
   clientRight.addLayers([li_bound_layer, dominanceLayer2017, li_village_layer, li_cityTown_layer, li_counties_layer]);
 
@@ -460,17 +397,33 @@ popFactory.pieChartData= colorStruct.map(item => item[2]);
   L.control.sideBySide(dominanceL, dominanceR).addTo(map);
 
 
-  // Start logic that controls layer selector on map in dashboard
+  // toggleLayer helps change municipal boundary layer on map
   function toggleLayer(layer) {
     switch (layer.isHidden()) {
       case true:
+        // Need to move layers to index position on top
+        clientLeft.moveLayer(layer, clientLeft.getLayers().length - 1);
+        clientRight.moveLayer(layer,clientRight.getLayers().length - 1);
         layer.show();
         break;
       case false:
         layer.hide();
     }
   };
-
+  //  addLayerToClient adds the specified layer to the specified client
+  function addLayerToClient(client, layer) {
+    // check layer is already added to client or not
+    switch (client.getLayers().includes(layer)) {
+      case true:
+        break;
+      case false:
+      // if not then add the layer
+        client.addLayer(layer)
+        // added to make sure these layers are below any municipal boundary layers
+        client.moveLayer(layer, 1);
+    }
+  };
+  // layerChange object is used to trigger events when different layers are selected
   var layerChange = {
 
     layersOff: function() {
@@ -495,37 +448,128 @@ popFactory.pieChartData= colorStruct.map(item => item[2]);
       li_village_layer.hide();
       li_cityTown_layer.hide();
       toggleLayer(li_counties_layer);
+    },
+
+    // 1960: function(client) {
+    //   addLayerToClient(client, dominanceLayer1960);
+    //   client.removeLayers([dominanceLayer2017, dominanceLayer2010, dominanceLayer1990, dominanceLayer1980, dominanceLayer1970]);
+    // },
+
+    // 1970: function(client) {
+    //   addLayerToClient(client, dominanceLayer1970);
+    //   client.removeLayers([dominanceLayer2017, dominanceLayer2010, dominanceLayer1990, dominanceLayer1980, dominanceLayer1960]);
+    // },
+    //
+    // 1980: function(client) {
+    //   addLayerToClient(client, dominanceLayer1980);
+    //   client.removeLayers([dominanceLayer2017, dominanceLayer2010, dominanceLayer1990, dominanceLayer1970, dominanceLayer1960]);
+    // },
+
+    1990: function(client) {
+      addLayerToClient(client, dominanceLayer1990);
+      client.removeLayers([dominanceLayer2017, dominanceLayer2010]);
+    },
+
+    2010: function(client) {
+      client.removeLayers([dominanceLayer2017]);
+      addLayerToClient(client, dominanceLayer2010, dominanceLayer1990);
+    },
+
+    2017: function(client) {
+      client.removeLayers([dominanceLayer2010]);
+      addLayerToClient(client, dominanceLayer2017, dominanceLayer1990);
     }
   };
 
+  // jQueries to hook up layer selector and radio buttons for map layer control
   $(`#layer_selector`).change(function() {
     layerChange[$(this).val()]();
   });
 
-  // End logic that controls layer selector
+  $('#originLeftSelector').change(function(){
+    var year = $(this).val()
+    layerChange[year](clientLeft, year);
+    $('#leftTitle').html(`Dominant Latino Origin by Census Tract ${year}`)
 
-  // render pop up when feature of dominance layer is clicked
+  });
 
+  $('#originRightSelector').change(function(){
+    var year = $(this).val()
+    layerChange[year](clientRight);
+    $('#rightTitle').html(`Dominant Latino Origin by Census Tract ${year}`)
+
+  });
+
+ // put in global scope for use in feature click events on map layers
   var sliderOffset = 0
   var currentMousePos = 0
+  // Gets mouse and slider position, updates constantly
   $('#map').mousemove(function(event){
     currentMousePos = event.pageX
     sliderOffset = $('.leaflet-sbs-divider').offset().left;
+    // Used to control layout of map as slider changes
+    if(sliderOffset < 200){
+      $('#leftTitle, #legendLeft').hide()
+      $('#rightTitle, #legendRight').show()
+      $('#rightTitle').css({"right": "37.5%", "font-size": "1rem", "top": "6%"})
+    }
+    if(sliderOffset > 1800 ){
+      $('#rightTitle, #legendRight').hide()
+      $('#leftTitle, #legendLeft').show()
+      $('#leftTitle').css({"left": "34.5%", "font-size": "1rem", "top":"6%"})
+    }
+    if(sliderOffset > 200 && sliderOffset < 1800 ){
+      $('#rightTitle, #legendRight').show()
+      $('#leftTitle, #legendLeft').show()
+      $('#leftTitle').css({"left": "15%", "font-size": ".75rem", "top": "5%"})
+      $('#rightTitle').css({"right": "15%", "font-size": ".75rem", "top": "5%"})
+    // console.log(currentMousePos + "|" + sliderOffset);
+  }
   });
 
-  dominanceLayer2010.on('featureClicked', featureEvent => {
-    if (currentMousePos < sliderOffset){
-      clickedOnFeature(featureEvent)
-    }
-  });
+
+
+//   $('#map').click(function(event){
+//
+//     console.log('fired click')
+//     console.log(currentMousePos + "|" + sliderOffset);
+//     console.log(clientLeft.getLayers()[1])
+//     console.log(clientRight.getLayers()[1])
+//
+// });
+
+dominanceLayer1990.on('featureClicked', featureEvent => {
+  if (currentMousePos > sliderOffset && clientRight.getLayers()[1] == dominanceLayer1990){
+    clickedOnFeature(featureEvent)
+  }
+
+  if (currentMousePos < sliderOffset && clientLeft.getLayers()[1] == dominanceLayer1990){
+    clickedOnFeature(featureEvent)
+  }
+});
+
+dominanceLayer2010.on('featureClicked', featureEvent => {
+  if (currentMousePos < sliderOffset && clientLeft.getLayers()[1] == dominanceLayer2010){
+    clickedOnFeature(featureEvent)
+  }
+
+  if(currentMousePos > sliderOffset && clientRight.getLayers()[1] == dominanceLayer2010){
+    clickedOnFeature(featureEvent)
+
+  }
+});
 
   dominanceLayer2017.on('featureClicked', featureEvent => {
-    if (currentMousePos > sliderOffset){
+    if (currentMousePos > sliderOffset && clientRight.getLayers()[1] == dominanceLayer2017){
+      clickedOnFeature(featureEvent)
+    }
+
+    if (currentMousePos < sliderOffset && clientLeft.getLayers()[1] == dominanceLayer2017){
       clickedOnFeature(featureEvent)
     }
   });
 
-
+  // switch()
   //functions removes popups that are not pinned when a new child is open
   function clickedOnFeature(featureEvent) {
     if ($('#popUpHolder').children().length > 0) {
@@ -547,7 +591,7 @@ popFactory.pieChartData= colorStruct.map(item => item[2]);
     }
     var originInfoNames= Object.keys(originInfo);
     for (index in originInfoNames){
-      popFactory.pieChartData[index].value= featureEvent.data[originInfo[originInfoNames[index]].tableInfo.alias]
+      popFactory.pieChartData[index].value= featureEvent.data[originInfo[originInfoNames[index]].tableInfo.variableID]
     }
 
     var popCount = popFactory.newPopUp(featureEvent);

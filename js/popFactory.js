@@ -23,7 +23,7 @@ var popFactory = {
     });
     var crossSVG = $(popFactory.xCross);
     var pinSVG = $(popFactory.SVGstr);
-console.log(popFactory.popUpCount)
+// console.log(popFactory.popUpCount)
     // Appends each part to the base
     popUp.append(crossSVG);
     popUp.append(textDiv)
@@ -167,7 +167,7 @@ console.log(popFactory.popUpCount)
 
 // Event Handler for Mousedown and Drag
 function dragElement(elmnt) {
-  console.log(elmnt);
+  // console.log(elmnt);
   // elmnt = the element being moved
   // Starting position of the element
   var pos1 = 0,

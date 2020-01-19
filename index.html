@@ -31,28 +31,54 @@
   </head>
   <body>
     <div id="map"></div>
+    <div id="leftTitle">Dominant Latino Origin by Census Tract 2010</div>
+    <div id="rightTitle">Dominant Latino Origin by Census Tract 2017</div>
     <!-- Create HTML Element for Map Legend-->
-    <div id ='legend'>
-      <h2 id = "legendTitle"> Origins</h2>
-      <ul id = "originClasses"></ul>
+    <div id ='legendRight'>
+      <ul id = "originClassesRight"></ul>
     </div>
-    <div id="popUpHolder"></div>
-    <div id="dashboard">
-      <h2 id = "dashTitle"> Long Island Latino Dominant Origins by Census Tract, 2017 </h2>
-      <div id = "selector_container">
-        <div id = "selector_menu">
-          <div>
-            <label for = "layer_selector"> Select Different Layers Showing Municipal Bounds </label>
-            <select id = "layer_selector" class = "selector">
-              <option disabled selected value> -- Select a Layer -- </option>
-              <option value = "layersOff"> Turn Layers Off </option>
-              <option value = "villages"> LI Villages </option>
-              <option value = "cityTowns"> LI Cities & Towns </option>
-              <option value = "counties"> LI Counties </option>
-            </select>
-          </div>
+    <div id = 'legendLeft'>
+      <ul id = "originClassesLeft"></ul>
         </div>
       </div>
     </div>
+    <div id="popUpHolder"></div>
+    <div id = "selector_container">
+      <ul id = "selectList">
+        <li>
+          <label for = "layer_selector"> Select Municipal Layer </label>
+          <select id = "layer_selector" class = "selector">
+            <option disabled selected value> -- Select a Layer -- </option>
+            <option value = "layersOff"> Turn Layers Off </option>
+            <option value = "villages"> LI Villages </option>
+            <option value = "cityTowns"> LI Cities & Towns </option>
+            <option value = "counties"> LI Counties </option>
+          </select>
+        </li>
+        <li>
+          <label for = "originLeftSelector"> Change Layer Left </label>
+          <select id = "originLeftSelector" class = "selector">
+            <option disabled selected value> -- Select a year -- </option>
+            <option value = 2017> 2017 </option>
+            <option value = 2010> 2010 </option>
+            <option value = 1990> 1990 </option>
+            <!-- <option value = 1980> 1980 </option>
+            <option value = 1970> 1970 </option>
+            <option value = 1960> 1960 </option> -->
+          </select>
+        </li>
+        <li>
+          <label for = "originRightSelector"> Change Layer Right </label>
+          <select id = "originRightSelector" class = "selector">
+            <option disabled selected value> -- Select a year -- </option>
+            <option value = 2017> 2017 </option>
+            <option value = 2010> 2010 </option>
+            <option value = 1990> 1990 </option>
+            <!-- <option value = 1980> 1980 </option>
+            <option value = 1970> 1970 </option>
+            <option value = 1960> 1960 </option> -->
+          </select>
+        </li>
+      </ul>
   </body>
 </html>
