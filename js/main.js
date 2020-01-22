@@ -1,10 +1,9 @@
-
 document.addEventListener("DOMContentLoaded", init);
 
 // function reports window size, used to resize when window extent changes
 function reportWindowSize() {
   var elem = document.querySelector('html');
-  elem.style.fontSize = `${window.innerWidth/75}px`;
+  elem.style.fontSize = `${window.innerWidth/75}px`; // why this? and not 62.5%
 }
 
 
@@ -23,7 +22,8 @@ function init() {
 
   reportWindowSize();
 
-  window.onresize = reportWindowSize; //runs function each time window resizes
+  window.onresize = reportWindowSize;
+
 
   const map = L.map('map', {
     zoomControl: false,
@@ -61,52 +61,90 @@ function init() {
     serverUrl: "http://app2.gss.stonybrook.edu/user/latinos"
   });
 
-  latinoOrigins = [{
-      variableID: "v01001",
-      alias: "pop_pr",
-      origin: "'Puerto-Rican'"
-    },
-    {
-      variableID: "v01002",
-      alias: "pop_mex",
-      origin: "'Mexican'"
-    },
-    {
-      variableID: "v01003",
-      alias: "pop_cub",
-      origin: "'Cuban'"
-    },
-    {
-      variableID: "v01004",
-      alias: "pop_other",
-      origin: "'Other'"
-    },
-    {
-      variableID: "v01005",
-      alias: "pop_dom",
-      origin: "'Dominican'"
-    },
-    {
-      variableID: "v01006",
-      alias: "pop_ca",
-      origin: "'Central American'"
-    },
-    {
-      variableID: "v01007",
-      alias: "pop_sa",
-      origin: "'South American'"
-    }
-  ]
-
+  var originInfo = {
+      "Puerto-Rican": {
+        colorInfo: {
+          h: 50,
+          s: 40
+        },
+        tableInfo: {
+          variableID: "v01001",
+          alias: "pop_pr"
+        }
+      },
+      "South American": {
+        colorInfo: {
+          h: 31,
+          s: 88
+        },
+        tableInfo: {
+          variableID: "v01007",
+          alias: "pop_sa"
+        }
+      },
+      "Central American": {
+        colorInfo: {
+          h: 106,
+          s: 47
+        },
+        tableInfo: {
+          variableID: "v01006",
+          alias: "pop_ca"
+        }
+      },
+      "Dominican": {
+        colorInfo: {
+          h: 248,
+          s: 50
+        },
+        tableInfo: {
+          variableID: "v01005",
+          alias: "pop_dom"
+        }
+      },
+      "Mexican": {
+        colorInfo: {
+          h: 204,
+          s: 50
+        },
+        tableInfo: {
+          variableID: "v01002",
+          alias: "pop_mex"
+        }
+      },
+      "Cuban": {
+        colorInfo: {
+          h: 0,
+          s: 50
+        },
+        tableInfo: {
+          variableID: "v01003",
+          alias: "pop_cub"
+        }
+      },
+      "Other": {
+        colorInfo: {
+          h: 0,
+          s: 0
+        },
+        tableInfo: {
+          variableID: "v01004",
+          alias: "pop_other"
+        }
+      }
+    };
 
 
   function createQuery(year, varList){
     varArgs = Array.prototype.slice.call(varList) // cast the variable arguments to a list again for use with list methods
-    let caseBlocks = Object.keys(latinoOrigins).map((originKey) => {
-      domOrigin =latinoOrigins[originKey].variableID
-      origin = latinoOrigins[originKey].origin
-      return [`WHEN greatest(${varArgs.join(",")}) = t.${domOrigin} THEN round(t.${domOrigin} ::numeric / t.v00002::numeric, 2)`,
-        `WHEN greatest(${varArgs.join()}) = t.${domOrigin} THEN ${origin} `]
+    let caseBlocks = Object.keys(originInfo).map((originKey) => {
+        if (varArgs.includes(originInfo[originKey].tableInfo.variableID)){
+          domOrigin = originInfo[originKey].tableInfo.variableID
+          return [`WHEN greatest(${varArgs.join(",")}) = t.${domOrigin} THEN round(t.${domOrigin} ::numeric / t.v00002::numeric, 2)`,
+            `WHEN greatest(${varArgs.join()}) = t.${domOrigin} THEN '${originKey}' `]
+        }else{
+          return ""
+        }
     });
 
     let dominanceQuery = `
@@ -121,19 +159,23 @@ function init() {
     END as dominant_origin
     FROM tract_${year} g INNER JOIN li_tract_${year} t ON g.gisjoin = t.gisjoin
     WHERE t.v00001::numeric > 0 AND t.v00002::numeric > 0`
-
     return dominanceQuery
 
   };
 
   function createLayer (year, varList){
 
-    var dominanceDataQuery = new carto.source.SQL(createQuery(year, varList));
+    varArgs = Array.prototype.slice.call(varList)
+
+    var dominanceDataQuery = new carto.source.SQL(createQuery(year, varArgs));
 
     var dominanceStyle = new carto.style.CartoCSS(`
            #layer{
              polygon-gamma: 0.5;
-          ${colorStruct.map(item=>item[1]).join("\n")}
+             ${colorStruct.map(item=>{
+               if(varArgs.includes(item[4])){
+                 return item[1]
+               }}).join("\n")}
              ::outline{
                line-width: 0px;
                line-opacity: 1;
@@ -141,6 +183,7 @@ function init() {
            }
          `);
     var clickColumns = Array.prototype.slice.call(varList).concat(['dominant_origin', 'areaname','total_pop', 'latino_pop']);
+    console.log(clickColumns)
     var dominanceLayer = new carto.layer.Layer(dominanceDataQuery, dominanceStyle, {
      featureClickColumns: clickColumns
    });
@@ -161,79 +204,6 @@ function init() {
   ];
 
 
-  var originInfo = {
-    "Puerto-Rican": {
-      colorInfo: {
-        h: 50,
-        s: 40
-      },
-      tableInfo: {
-        variableID: "v01001",
-        alias: "pop_pr"
-      }
-    },
-    "South American": {
-      colorInfo: {
-        h: 31,
-        s: 88
-      },
-      tableInfo: {
-        variableID: "v01007",
-        alias: "pop_sa"
-      }
-    },
-    "Central American": {
-      colorInfo: {
-        h: 106,
-        s: 47
-      },
-      tableInfo: {
-        variableID: "v01006",
-        alias: "pop_ca"
-      }
-    },
-    "Dominican": {
-      colorInfo: {
-        h: 248,
-        s: 50
-      },
-      tableInfo: {
-        variableID: "v01005",
-        alias: "pop_dom"
-      }
-    },
-    "Mexican": {
-      colorInfo: {
-        h: 204,
-        s: 60
-      },
-      tableInfo: {
-        variableID: "v01002",
-        alias: "pop_mex"
-      }
-    },
-    "Cuban": {
-      colorInfo: {
-        h: 345,
-        s: 44
-      },
-      tableInfo: {
-        variableID: "v01003",
-        alias: "pop_cub"
-      }
-    },
-    "Other": {
-      colorInfo: {
-        h: 201,
-        s: 12
-      },
-      tableInfo: {
-        variableID: "v01004",
-        alias: "pop_other"
-      }
-    }
-  };
-
 
   var rampCount = 3;
 
@@ -252,20 +222,22 @@ function init() {
 
     var headerLeft = ($('<h4/>', {
       html: originInfoKey,
-      id: 'categoryTitleLeft'
+      id: 'categoryTitleLeft_' + originInfoKey.replace(" ", "_"),
+      'class': 'categoryTitleLeft'
     }));
 
     var headerRight = ($('<h4/>', {
       html: originInfoKey,
-      id: 'categoryTitleRight'
+      id: 'categoryTitleRight_' + originInfoKey.replace(" ", "_"),
+      'class': 'categoryTitleRight'
     }));
 
     var originListItemLeft = $('<li/>', {
-      id: originInfoKey + "_left"
+      id:  originInfoKey.replace(" ", "_") + "_left"
     });
 
     var originListItemRight = $('<li/>', {
-      id: originInfoKey
+      id: originInfoKey.replace(" ", "_") + "_right"
     });
 
     originListItemLeft.append(originRamp.map((rampLightness, index) => {
@@ -287,27 +259,36 @@ function init() {
 
     }))
 
+    var variableID = originInfo[originInfoKey].tableInfo.variableID
     return [headerLeft.add(originListItemLeft),`[dominant_origin = "${originInfoKey}"]{
   polygon-fill: ramp([relative_dom], (${colorStringArray.join(',')}), jenks(${rampCount}));
 }
-`, pieChartColorStruct, headerRight.add(originListItemRight)]
+`, pieChartColorStruct, headerRight.add(originListItemRight), variableID]
   })
+
 
 
   popFactory.pieChartData= colorStruct.map(item => item[2]);
 
   // Use ColorStruct to Create legends
-  $('#originClassesLeft').html("").append( colorStruct.map(item => item[0]));
-  $('#originClassesRight').html("").append( colorStruct.map(item => item[3]));
+  var legendContentLeft = colorStruct.map(item => item[0]);
+  var legendContentRight = colorStruct.map(item => item[3]);
+  $('#originClassesLeft').html("").append(legendContentLeft);
+  $('#originClassesRight').html("").append(legendContentRight);
 
 
   const varList = ['v01001', 'v01002', 'v01003', 'v01004', 'v01005', 'v01006', 'v01007'];
+  const varList2 = ['v01001', 'v01002', 'v01003', 'v01004'];
 
   const dominanceLayer2017 = createLayer(2017, varList);
 
   const dominanceLayer2010 = createLayer(2010, varList);
 
   const dominanceLayer1990 = createLayer(1990, varList);
+  //
+  const dominanceLayer1980 = createLayer(1980, varList2);
+
+  // const dominanceLayer1960 = createLayer(1960, varList2);
 
   const li_bound_source = new carto.source.Dataset("li_bound_wgs84");
 
@@ -321,7 +302,7 @@ function init() {
     visible: false
   });
 
-  const li_village_source = new carto.source.Dataset('villages_hamlets_wgs84');
+  const li_village_source = new carto.source.Dataset('li_villages_wgs84');
 
   const li_village_style = new carto.style.CartoCSS(`
     ##layer{
@@ -392,12 +373,16 @@ function init() {
   clientRight.addLayers([li_bound_layer, dominanceLayer2017, li_village_layer, li_cityTown_layer, li_counties_layer]);
 
 
+
   var dominanceL = clientLeft.getLeafletLayer().addTo(map);
   var dominanceR = clientRight.getLeafletLayer().addTo(map);
   L.control.sideBySide(dominanceL, dominanceR).addTo(map);
 
 
   // toggleLayer helps change municipal boundary layer on map
+  // Probably wondering why this exist after looking at the below function
+  // Its because addLayerToClient is dependant on the layer list being a certain length
+  // Just easier to keep it like this and performance is fine.
   function toggleLayer(layer) {
     switch (layer.isHidden()) {
       case true:
@@ -417,12 +402,22 @@ function init() {
       case true:
         break;
       case false:
+        var dominanceLayers = [dominanceLayer1980, dominanceLayer1990, dominanceLayer2010, dominanceLayer2017]
+        // iterate through layers and see if they're loaded to the client, if so get rid of them
+        for (domLayer of dominanceLayers){
+          if (client.getLayers()[1] == domLayer){
+          client.removeLayer(domLayer)
+        }else{
+          //do nothing
+        }
+      }
       // if not then add the layer
         client.addLayer(layer)
         // added to make sure these layers are below any municipal boundary layers
         client.moveLayer(layer, 1);
     }
   };
+
   // layerChange object is used to trigger events when different layers are selected
   var layerChange = {
 
@@ -436,6 +431,7 @@ function init() {
       li_cityTown_layer.hide();
       li_counties_layer.hide();
       toggleLayer(li_village_layer);
+      console.log(clientLeft.getLayers())
     },
 
     cityTowns: function() {
@@ -460,25 +456,45 @@ function init() {
     //   client.removeLayers([dominanceLayer2017, dominanceLayer2010, dominanceLayer1990, dominanceLayer1980, dominanceLayer1960]);
     // },
     //
-    // 1980: function(client) {
-    //   addLayerToClient(client, dominanceLayer1980);
-    //   client.removeLayers([dominanceLayer2017, dominanceLayer2010, dominanceLayer1990, dominanceLayer1970, dominanceLayer1960]);
-    // },
+    1980: function(client) {
+      addLayerToClient(client, dominanceLayer1980);
+      if(client == clientLeft){
+      $('#legendLeft').find('#South_American_left, #categoryTitleLeft_South_American').remove()
+      $('#legendLeft').find('#Central_American_left, #categoryTitleLeft_Central_American').remove()
+      $('#legendLeft').find('#Dominican_left, #categoryTitleLeft_Dominican').remove()
+    } else {
+      $('#legendRight').find('#South_American_right, #categoryTitleRight_South_American').remove()
+      $('#legendRight').find('#Central_American_right, #categoryTitleRight_Central_American').remove()
+      $('#legendRight').find('#Dominican_right, #categoryTitleRight_Dominican').remove()
+    }
+    },
 
     1990: function(client) {
       addLayerToClient(client, dominanceLayer1990);
-      client.removeLayers([dominanceLayer2017, dominanceLayer2010]);
-    },
+      if(client == clientLeft){
+      $('#originClassesLeft').html("").append(legendContentLeft);
+    } else {
+      $('#originClassesRight').html("").append(legendContentRight);
+    }
+   },
 
     2010: function(client) {
-      client.removeLayers([dominanceLayer2017]);
-      addLayerToClient(client, dominanceLayer2010, dominanceLayer1990);
-    },
+      addLayerToClient(client, dominanceLayer2010);
+      if(client == clientLeft){
+      $('#originClassesLeft').html("").append(legendContentLeft);
+    } else {
+      $('#originClassesRight').html("").append(legendContentRight);
+    }
+   },
 
     2017: function(client) {
-      client.removeLayers([dominanceLayer2010]);
-      addLayerToClient(client, dominanceLayer2017, dominanceLayer1990);
+      addLayerToClient(client, dominanceLayer2017);
+      if(client == clientLeft){
+      $('#originClassesLeft').html("").append(legendContentLeft);
+    } else {
+      $('#originClassesRight').html("").append(legendContentRight);
     }
+   }
   };
 
   // jQueries to hook up layer selector and radio buttons for map layer control
@@ -508,21 +524,21 @@ function init() {
     currentMousePos = event.pageX
     sliderOffset = $('.leaflet-sbs-divider').offset().left;
     // Used to control layout of map as slider changes
-    if(sliderOffset < 200){
+    if(sliderOffset < window.innerWidth * .2){
       $('#leftTitle, #legendLeft').hide()
       $('#rightTitle, #legendRight').show()
-      $('#rightTitle').css({"right": "37.5%", "font-size": "1rem", "top": "6%"})
+      $('#rightTitle').css({"right": "37.5%", "font-size": "1.25rem", "top": "6%"})
     }
-    if(sliderOffset > 1800 ){
+    if(sliderOffset > window.innerWidth * .9 ){
       $('#rightTitle, #legendRight').hide()
       $('#leftTitle, #legendLeft').show()
-      $('#leftTitle').css({"left": "34.5%", "font-size": "1rem", "top":"6%"})
+      $('#leftTitle').css({"left": "34.5%", "font-size": "1.25rem", "top":"6%"})
     }
-    if(sliderOffset > 200 && sliderOffset < 1800 ){
+    if(sliderOffset > window.innerWidth * .2 && sliderOffset < window.innerWidth * .9 ){
       $('#rightTitle, #legendRight').show()
       $('#leftTitle, #legendLeft').show()
-      $('#leftTitle').css({"left": "15%", "font-size": ".75rem", "top": "5%"})
-      $('#rightTitle').css({"right": "15%", "font-size": ".75rem", "top": "5%"})
+      $('#leftTitle').css({"left": "15%", "font-size": ".9rem", "top": "5%"})
+      $('#rightTitle').css({"right": "15%", "font-size": ".9rem", "top": "5%"})
     // console.log(currentMousePos + "|" + sliderOffset);
   }
   });
@@ -537,6 +553,17 @@ function init() {
 //     console.log(clientRight.getLayers()[1])
 //
 // });
+
+dominanceLayer1980.on('featureClicked', featureEvent => {
+  if (currentMousePos > sliderOffset && clientRight.getLayers()[1] == dominanceLayer1980){
+    clickedOnFeature(featureEvent)
+  }
+
+  if (currentMousePos < sliderOffset && clientLeft.getLayers()[1] == dominanceLayer1980){
+    clickedOnFeature(featureEvent)
+  }
+});
+
 
 dominanceLayer1990.on('featureClicked', featureEvent => {
   if (currentMousePos > sliderOffset && clientRight.getLayers()[1] == dominanceLayer1990){
