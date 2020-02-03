@@ -24,36 +24,35 @@ body {
 }
 
 #leftTitle {
-  font-family: sans-serif;
-  font-size: .9rem;
+  font-family: "Merienda One";
+  font-size: 1.15rem;
   font-weight: bold;
   text-align: center;
   padding: 0;
   margin: 0;
   position: absolute;
   left:15%;
-  top:5%;
+  top:7.5%;
   z-index: 5;
   overflow:hidden;
 }
 
 #rightTitle {
-  font-family: sans-serif;
-  font-size: .9rem;
+  font-family: "Merienda One";
+  font-size: 1.15rem;
   font-weight: bold;
   text-align: center;
   padding: 0;
   margin: 0;
   position: absolute;
   right:15%;
-  top:5%;
+  bottom:7.5%;
   z-index: 5;
   overflow:hidden;
 }
 
 
-
-#selector_container{
+/* #dataViewContainer{
   font-family: sans-serif;
   text-align: center;
   border: .1rem solid black;
@@ -61,10 +60,35 @@ body {
   padding: 0;
   margin: 0;
   position: absolute;
+  left:10.0%;
+  top:25.0%;
+  z-index: 2;
+  overflow:hidden;
+}
+
+#dataViewList{
+  font-size: .5rem;
+  padding:0;
+  margin:auto;
+  text-align: left;
+  list-style-type: none;
+} */
+
+
+#selector_container{
+  font-family: "Open Sans";
+  text-align: center;
+  border: .1rem solid black;
+  background: rgba(178, 178, 178, .8);
+  padding: 0;
+  margin: 0;
+  position: absolute;
   left:1.0%;
   bottom:7.5%;
   z-index: 2;
   overflow:hidden;
+  box-shadow: .06rem -.06rem .4rem -.03rem #302F2F,
+             -.06rem .06rem .4rem -.03rem #302F2F;
 }
 
 #selectList{
@@ -97,10 +121,10 @@ label {
 
 
 #legendRight{
-  font-family: sans-serif;
+  font-family: "Open Sans";
   text-align: center;
-  border: .1rem solid black;
-  background: #B2B2B2;
+  border: .05rem solid black;
+  background: rgba(178, 178, 178, .7);
   padding: 0;
   margin: 0;
   position: absolute;
@@ -108,13 +132,15 @@ label {
   bottom:7.5%;
   z-index: 2;
   overflow:hidden;
+  box-shadow: .06rem -.06rem .4rem -.03rem #302F2F,
+             -.06rem .06rem .4rem -.03rem #302F2F;
 }
 
 #legendLeft{
-  font-family: sans-serif;
+  font-family: "Open Sans";
   text-align: center;
   border: .1rem solid black;
-  background: #B2B2B2;
+  background: rgba(178, 178, 178, .7);
   padding: 0;
   margin: 0;
   position: absolute;
@@ -122,6 +148,8 @@ label {
   top:7.5%;
   z-index: 2;
   overflow:hidden;
+  box-shadow: .06rem -.06rem .4rem -.03rem #302F2F,
+             -.06rem .06rem .4rem -.03rem #302F2F;
 }
 
 
@@ -165,14 +193,14 @@ label {
 .categoryTitleLeft{
   margin-top: 5px;
   margin-bottom: 2px;
-  font-size: .5rem;
+  font-size: .5em;
   text-align:center;
 }
 
 .categoryTitleRight{
   margin-top: 5px;
   margin-bottom: 2px;
-  font-size: .5rem;
+  font-size: .5em;
   text-align:center;
 }
 
