@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", init);
 // function reports window size, used to resize when window extent changes
 function reportWindowSize() {
   var elem = document.querySelector('html');
-  elem.style.fontSize = `${window.innerWidth/75}px`; // why this? and not 62.5%
+  elem.style.fontSize = `${window.innerWidth/75}px`;
 }
 
 
@@ -20,6 +20,8 @@ function init() {
       }
   });
 
+
+
   reportWindowSize();
 
   window.onresize = reportWindowSize;
@@ -29,9 +31,9 @@ function init() {
     zoomControl: false,
     doubleClickZoom: false,
     maxBoundsViscosity: 1.0
-  }).setView([40.50, -73.025], 10);
+  }).setView([40.789142, -73.064961], 10);
 
-  const bounds = L.latLngBounds([41.394543, -70.684156], [40.370698, -75.346929]);
+  const bounds = L.latLngBounds([ 41.394543, -70.684156 ], [ 40.370698, -75.346929 ]);
 
   map.setMaxBounds(bounds);
 
@@ -140,7 +142,7 @@ function init() {
     let caseBlocks = Object.keys(originInfo).map((originKey) => {
         if (varArgs.includes(originInfo[originKey].tableInfo.variableID)){
           domOrigin = originInfo[originKey].tableInfo.variableID
-          return [`WHEN greatest(${varArgs.join(",")}) = t.${domOrigin} THEN round(t.${domOrigin} ::numeric / t.v00002::numeric, 2)`,
+          return [`WHEN greatest(${varArgs.join(",")}) = t.${domOrigin} THEN round(t.${domOrigin} ::numeric / NULLIF(t.v00002,0)::numeric, 2)`,
             `WHEN greatest(${varArgs.join()}) = t.${domOrigin} THEN '${originKey}' `]
         }else{
           return ""
@@ -158,7 +160,7 @@ function init() {
     ${caseBlocks.map(item=>item[1]).join("\n")}
     END as dominant_origin
     FROM tract_${year} g INNER JOIN li_tract_${year} t ON g.gisjoin = t.gisjoin
-    WHERE t.v00001::numeric > 0 AND t.v00002::numeric > 0`
+    `
     return dominanceQuery
 
   };
@@ -177,13 +179,12 @@ function init() {
                  return item[1]
                }}).join("\n")}
              ::outline{
-               line-width: 0px;
+               line-width: .00px;
                line-opacity: 1;
              }
            }
          `);
     var clickColumns = Array.prototype.slice.call(varList).concat(['dominant_origin', 'areaname','total_pop', 'latino_pop']);
-    console.log(clickColumns)
     var dominanceLayer = new carto.layer.Layer(dominanceDataQuery, dominanceStyle, {
      featureClickColumns: clickColumns
    });
@@ -261,7 +262,7 @@ function init() {
 
     var variableID = originInfo[originInfoKey].tableInfo.variableID
     return [headerLeft.add(originListItemLeft),`[dominant_origin = "${originInfoKey}"]{
-  polygon-fill: ramp([relative_dom], (${colorStringArray.join(',')}), jenks(${rampCount}));
+  polygon-fill: ramp([relative_dom], (${colorStringArray.join(',')}), equal(${rampCount}));
 }
 `, pieChartColorStruct, headerRight.add(originListItemRight), variableID]
   })
@@ -271,26 +272,33 @@ function init() {
   popFactory.pieChartData= colorStruct.map(item => item[2]);
 
   // Use ColorStruct to Create legends
-  var legendContentLeft = colorStruct.map(item => item[0]);
-  var legendContentRight = colorStruct.map(item => item[3]);
+  const legendContentLeft = colorStruct.map(item => item[0]);
+  const legendContentRight = colorStruct.map(item => item[3]);
   $('#originClassesLeft').html("").append(legendContentLeft);
   $('#originClassesRight').html("").append(legendContentRight);
 
-
+// Here is where all the map layers are created, each of the main dominance layers make use of the variable list
   const varList = ['v01001', 'v01002', 'v01003', 'v01004', 'v01005', 'v01006', 'v01007'];
-  const varList2 = ['v01001', 'v01002', 'v01003', 'v01004'];
 
   const dominanceLayer2017 = createLayer(2017, varList);
 
   const dominanceLayer2010 = createLayer(2010, varList);
 
   const dominanceLayer1990 = createLayer(1990, varList);
-  //
-  const dominanceLayer1980 = createLayer(1980, varList2);
 
-  // const dominanceLayer1960 = createLayer(1960, varList2);
+  const dominanceLayer1980 = createLayer(1980, varList.slice(0,4));
 
-  const li_bound_source = new carto.source.Dataset("li_bound_wgs84");
+  const dominanceLayer1970 = createLayer(1970, [varList[0], varList[3]]);
+
+  const dominanceLayer1960 = createLayer(1960, [varList[0]]);
+
+  // This layer is almost completely vestigal. FYI its a boundary I made by dissolving all the tract boundaries
+  // It could potentially be used to better accentuate the tracts (by giving them a black outline) Problem is you would need
+  // To make one for each census year as the outer boundaries change and then dynamically change it for each client
+  // Its more important use however is that it allows the feature clicks on the main layers to work even when they are Below
+  // the other municpal layers...silly, but I think it's a bug with carto where the bottom layer feature clicks dont work
+  // don't have the time to investigate so I left as is.
+  const li_bound_source = new carto.source.Dataset("tract_outer_bound");
 
   const li_bound_style = new carto.style.CartoCSS(`
     #layer{
@@ -302,15 +310,15 @@ function init() {
     visible: false
   });
 
-  const li_village_source = new carto.source.Dataset('li_villages_wgs84');
+  const li_village_source = new carto.source.Dataset('villages_hamlets_wgs84');
 
   const li_village_style = new carto.style.CartoCSS(`
     ##layer{
       line-color:#fff;
-      line-width: 1px;
+      line-width: .5px;
       ::labels{
         text-face-name: 'DejaVu Serif Book';
-        text-name:[name];
+        text-name:[e911name];
         text-placement: point;
         text-size: 12;
         text-fill: #676767;
@@ -343,7 +351,7 @@ function init() {
     `);
 
   const li_cityTown_layer = new carto.layer.Layer(li_cityTown_source, li_cityTown_style, {
-    visible: false
+    visible: false, featureOverColumns: ['name']
   });
 
   const li_counties_source = new carto.source.Dataset("li_counties_wgs84");
@@ -368,14 +376,44 @@ function init() {
     visible: false
   });
 
-  // Add layers to both sides of the sliders - CV 12/13/2019
-  clientLeft.addLayers([li_bound_layer, dominanceLayer2010, li_village_layer, li_cityTown_layer, li_counties_layer]);
-  clientRight.addLayers([li_bound_layer, dominanceLayer2017, li_village_layer, li_cityTown_layer, li_counties_layer]);
+ // Below was the start of a feature to allow the user to see counts of the number of census tracts dominanted
+ // by each origin within a municipal boundary. It wasen't requested and I just don't have the time to finish it,
+ // Left just incase someone else wants too; you can see the html alements for it commented out
+ //  var muni = 'Brookhaven'
+ //
+ //  var query = createQuery(2010, varList);
+ //
+ //  const townQuery = new carto.source.SQL(`
+ //    SELECT d.*
+ //    FROM (${query}) d, li_cities_towns_wgs84 g
+ //    WHERE ST_Within(ST_PointOnSurface(d.the_geom_webmercator), g.the_geom_webmercator) AND g.name = '${muni}'
+ //    `);
+ //
+ //  const townDataView = new carto.dataview.Category(townQuery, 'dominant_origin', {
+ //      operation: carto.operation.COUNT, // Compute the average
+ //      operationColumn: 'dominant_origin'
+ //    });
+ //
+ //  townDataView.on('dataChanged', data => {
+ //   for (category of data.categories){
+ //     $(`#dataViewContainer`).find(`#${category.name.replace(" ", "_")}`)
+ //     .replaceWith(`<li id = '${category.name.replace(" ", "_")}'>${category.name}:${category.value}</li>`);
+ //   }
+ // });
+ //
+ // clientLeft.addDataview(townDataView);
 
 
 
-  var dominanceL = clientLeft.getLeafletLayer().addTo(map);
-  var dominanceR = clientRight.getLeafletLayer().addTo(map);
+  // Add layers to both sides of the sliders
+  clientLeft.addLayers([li_bound_layer,dominanceLayer2010, li_village_layer, li_cityTown_layer, li_counties_layer]);
+  clientRight.addLayers([li_bound_layer,dominanceLayer2017, li_village_layer, li_cityTown_layer, li_counties_layer]);
+  for(layer of clientLeft.getLayers()){console.log(layer)};
+
+
+  // call side by side with the two clients; see leaflet-side-by-side.js for more info.
+  const dominanceL = clientLeft.getLeafletLayer().addTo(map);
+  const dominanceR = clientRight.getLeafletLayer().addTo(map);
   L.control.sideBySide(dominanceL, dominanceR).addTo(map);
 
 
@@ -387,9 +425,9 @@ function init() {
     switch (layer.isHidden()) {
       case true:
         // Need to move layers to index position on top
+        layer.show();
         clientLeft.moveLayer(layer, clientLeft.getLayers().length - 1);
         clientRight.moveLayer(layer,clientRight.getLayers().length - 1);
-        layer.show();
         break;
       case false:
         layer.hide();
@@ -402,7 +440,7 @@ function init() {
       case true:
         break;
       case false:
-        var dominanceLayers = [dominanceLayer1980, dominanceLayer1990, dominanceLayer2010, dominanceLayer2017]
+        var dominanceLayers = [dominanceLayer1960, dominanceLayer1970, dominanceLayer1980, dominanceLayer1990, dominanceLayer2010, dominanceLayer2017]
         // iterate through layers and see if they're loaded to the client, if so get rid of them
         for (domLayer of dominanceLayers){
           if (client.getLayers()[1] == domLayer){
@@ -420,7 +458,8 @@ function init() {
 
   // layerChange object is used to trigger events when different layers are selected
   var layerChange = {
-
+// As stated above I choose to just show and hide the layers as it keeps the length of the array returned by carto::getLayers() constant
+// This results in kind of a non-ideal effect where the layer will flicker first before hiding and showing the actual layer
     layersOff: function() {
       li_cityTown_layer.hide();
       li_village_layer.hide();
@@ -428,41 +467,77 @@ function init() {
     },
 
     villages: function() {
+      toggleLayer(li_village_layer);
       li_cityTown_layer.hide();
       li_counties_layer.hide();
-      toggleLayer(li_village_layer);
-      console.log(clientLeft.getLayers())
     },
 
     cityTowns: function() {
+      toggleLayer(li_cityTown_layer);
       li_village_layer.hide();
       li_counties_layer.hide();
-      toggleLayer(li_cityTown_layer);
     },
 
     counties: function() {
+      toggleLayer(li_counties_layer);
       li_village_layer.hide();
       li_cityTown_layer.hide();
-      toggleLayer(li_counties_layer);
+    },
+// A lot is going on here for the years and it's kind of hacky, but let me explain
+// First when the {year} value is selected from the dropdown addLayerToclient is called (see above)
+// Next we check which client the layer was added to, then we find and remove the elements from the correct legend
+// that are no longer represented by the map layers
+// Before all that however, you'll notice that the legend first needs to be recreated on the chance the previously loaded layer
+// Had already modified the legend. Surprsingly this is pretty fast so I didin't go further than this.
+    1960: function(client) {
+      addLayerToClient(client, dominanceLayer1960);
+      if(client == clientLeft){
+      // $('#originClassesLeft').html("").append(legendContentLeft);
+      $('#legendLeft').find('#South_American_left, #categoryTitleLeft_South_American').remove()
+      $('#legendLeft').find('#Central_American_left, #categoryTitleLeft_Central_American').remove()
+      $('#legendLeft').find('#Dominican_left, #categoryTitleLeft_Dominican').remove()
+      $('#legendLeft').find('#Other_left, #categoryTitleLeft_Other').remove()
+      $('#legendLeft').find('#Mexican_left, #categoryTitleLeft_Mexican').remove()
+      $('#legendLeft').find('#Cuban_left, #categoryTitleLeft_Cuban').remove()
+    } else {
+      // $('#originClassesRight').html("").append(legendContentRight);
+      $('#legendRight').find('#South_American_right, #categoryTitleRight_South_American').remove()
+      $('#legendRight').find('#Central_American_right, #categoryTitleRight_Central_American').remove()
+      $('#legendRight').find('#Dominican_right, #categoryTitleRight_Dominican').remove()
+      $('#legendRight').find('#Other_right, #categoryTitleRight_Other').remove()
+      $('#legendRight').find('#Mexican_right, #categoryTitleRight_Mexican').remove()
+      $('#legendRight').find('#Cuban_right, #categoryTitleRight_Cuban').remove()
+    }
     },
 
-    // 1960: function(client) {
-    //   addLayerToClient(client, dominanceLayer1960);
-    //   client.removeLayers([dominanceLayer2017, dominanceLayer2010, dominanceLayer1990, dominanceLayer1980, dominanceLayer1970]);
-    // },
+    1970: function(client) {
+      addLayerToClient(client, dominanceLayer1970);
+      if(client == clientLeft){
+      $('#originClassesLeft').html("").append(legendContentLeft);
+      $('#legendLeft').find('#South_American_left, #categoryTitleLeft_South_American').remove()
+      $('#legendLeft').find('#Central_American_left, #categoryTitleLeft_Central_American').remove()
+      $('#legendLeft').find('#Dominican_left, #categoryTitleLeft_Dominican').remove()
+      $('#legendLeft').find('#Mexican_left, #categoryTitleLeft_Mexican').remove()
+      $('#legendLeft').find('#Cuban_left, #categoryTitleLeft_Cuban').remove()
+    } else {
+      $('#originClassesRight').html("").append(legendContentRight);
+      $('#legendRight').find('#South_American_right, #categoryTitleRight_South_American').remove()
+      $('#legendRight').find('#Central_American_right, #categoryTitleRight_Central_American').remove()
+      $('#legendRight').find('#Dominican_right, #categoryTitleRight_Dominican').remove()
+      $('#legendRight').find('#Mexican_right, #categoryTitleRight_Mexican').remove()
+      $('#legendRight').find('#Cuban_right, #categoryTitleRight_Cuban').remove()
+    }
+    },
 
-    // 1970: function(client) {
-    //   addLayerToClient(client, dominanceLayer1970);
-    //   client.removeLayers([dominanceLayer2017, dominanceLayer2010, dominanceLayer1990, dominanceLayer1980, dominanceLayer1960]);
-    // },
-    //
     1980: function(client) {
       addLayerToClient(client, dominanceLayer1980);
       if(client == clientLeft){
+      $('#originClassesLeft').html("").append(legendContentLeft);
       $('#legendLeft').find('#South_American_left, #categoryTitleLeft_South_American').remove()
       $('#legendLeft').find('#Central_American_left, #categoryTitleLeft_Central_American').remove()
       $('#legendLeft').find('#Dominican_left, #categoryTitleLeft_Dominican').remove()
     } else {
+      $('#originClassesRight').html("").append(legendContentRight);
       $('#legendRight').find('#South_American_right, #categoryTitleRight_South_American').remove()
       $('#legendRight').find('#Central_American_right, #categoryTitleRight_Central_American').remove()
       $('#legendRight').find('#Dominican_right, #categoryTitleRight_Dominican').remove()
@@ -497,6 +572,9 @@ function init() {
    }
   };
 
+
+
+
   // jQueries to hook up layer selector and radio buttons for map layer control
   $(`#layer_selector`).change(function() {
     layerChange[$(this).val()]();
@@ -505,14 +583,14 @@ function init() {
   $('#originLeftSelector').change(function(){
     var year = $(this).val()
     layerChange[year](clientLeft, year);
-    $('#leftTitle').html(`Dominant Latino Origin by Census Tract ${year}`)
+    $('#leftTitle').html(`Dominant Latino Origin <br> by Census Tract ${year}`)
 
   });
 
   $('#originRightSelector').change(function(){
     var year = $(this).val()
     layerChange[year](clientRight);
-    $('#rightTitle').html(`Dominant Latino Origin by Census Tract ${year}`)
+    $('#rightTitle').html(`Dominant Latino Origin <br> by Census Tract ${year}`)
 
   });
 
@@ -527,32 +605,46 @@ function init() {
     if(sliderOffset < window.innerWidth * .2){
       $('#leftTitle, #legendLeft').hide()
       $('#rightTitle, #legendRight').show()
-      $('#rightTitle').css({"right": "37.5%", "font-size": "1.25rem", "top": "6%"})
+      $('#selector_container').css({bottom:"75%", left:"1.5%"})
+      $('#rightTitle').css({"right": "40%", "font-size": "1.65rem", "top": "6%"})
     }
     if(sliderOffset > window.innerWidth * .9 ){
       $('#rightTitle, #legendRight').hide()
       $('#leftTitle, #legendLeft').show()
-      $('#leftTitle').css({"left": "34.5%", "font-size": "1.25rem", "top":"6%"})
+      $('#selector_container').css({bottom:"7.5%", left:"91%"})
+      $('#leftTitle').css({"left": "35%", "font-size": "1.65rem", "top":"6%"})
     }
     if(sliderOffset > window.innerWidth * .2 && sliderOffset < window.innerWidth * .9 ){
       $('#rightTitle, #legendRight').show()
       $('#leftTitle, #legendLeft').show()
-      $('#leftTitle').css({"left": "15%", "font-size": ".9rem", "top": "5%"})
-      $('#rightTitle').css({"right": "15%", "font-size": ".9rem", "top": "5%"})
+      $('#selector_container').css({bottom:"7.5%", left:"1%"})
+      $('#leftTitle').css({"left": "15%", "font-size": "1.15rem", "top": "7.5%"})
+      $('#rightTitle').css({"right": "15%", "font-size": "1.15rem", "bottom": "7.5%"})
     // console.log(currentMousePos + "|" + sliderOffset);
   }
   });
 
 
+// Feature clicks for each dominance layer
+dominanceLayer1960.on('featureClicked', featureEvent => {
+  if (currentMousePos > sliderOffset && clientRight.getLayers()[1] == dominanceLayer1960){
+    clickedOnFeature(featureEvent)
+  }
 
-//   $('#map').click(function(event){
-//
-//     console.log('fired click')
-//     console.log(currentMousePos + "|" + sliderOffset);
-//     console.log(clientLeft.getLayers()[1])
-//     console.log(clientRight.getLayers()[1])
-//
-// });
+  if (currentMousePos < sliderOffset && clientLeft.getLayers()[1] == dominanceLayer1960){
+    clickedOnFeature(featureEvent)
+  }
+});
+
+dominanceLayer1970.on('featureClicked', featureEvent => {
+  if (currentMousePos > sliderOffset && clientRight.getLayers()[1] == dominanceLayer1970){
+    clickedOnFeature(featureEvent)
+  }
+
+  if (currentMousePos < sliderOffset && clientLeft.getLayers()[1] == dominanceLayer1970){
+    clickedOnFeature(featureEvent)
+  }
+});
 
 dominanceLayer1980.on('featureClicked', featureEvent => {
   if (currentMousePos > sliderOffset && clientRight.getLayers()[1] == dominanceLayer1980){
@@ -563,7 +655,6 @@ dominanceLayer1980.on('featureClicked', featureEvent => {
     clickedOnFeature(featureEvent)
   }
 });
-
 
 dominanceLayer1990.on('featureClicked', featureEvent => {
   if (currentMousePos > sliderOffset && clientRight.getLayers()[1] == dominanceLayer1990){
@@ -586,7 +677,7 @@ dominanceLayer2010.on('featureClicked', featureEvent => {
   }
 });
 
-  dominanceLayer2017.on('featureClicked', featureEvent => {
+dominanceLayer2017.on('featureClicked', featureEvent => {
     if (currentMousePos > sliderOffset && clientRight.getLayers()[1] == dominanceLayer2017){
       clickedOnFeature(featureEvent)
     }
@@ -596,9 +687,8 @@ dominanceLayer2010.on('featureClicked', featureEvent => {
     }
   });
 
-  // switch()
-  //functions removes popups that are not pinned when a new child is open
-  function clickedOnFeature(featureEvent) {
+
+function clickedOnFeature(featureEvent) {
     if ($('#popUpHolder').children().length > 0) {
       var popUpChildren = $('#popUpHolder').children()
 
@@ -617,6 +707,7 @@ dominanceLayer2010.on('featureClicked', featureEvent => {
 
     }
     var originInfoNames= Object.keys(originInfo);
+    console.log(Object.keys(originInfo));
     for (index in originInfoNames){
       popFactory.pieChartData[index].value= featureEvent.data[originInfo[originInfoNames[index]].tableInfo.variableID]
     }
