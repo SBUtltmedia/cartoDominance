@@ -25,7 +25,7 @@ body {
 
 #leftTitle {
   font-family: "Merienda One";
-  font-size: 1.15rem;
+  font-size: 1.35rem;
   font-weight: bold;
   text-align: center;
   padding: 0;
@@ -39,7 +39,7 @@ body {
 
 #rightTitle {
   font-family: "Merienda One";
-  font-size: 1.15rem;
+  font-size: 1.35rem;
   font-weight: bold;
   text-align: center;
   padding: 0;
@@ -78,7 +78,7 @@ body {
 #selector_container{
   font-family: "Open Sans";
   text-align: center;
-  border: .1rem solid black;
+  border: .05rem solid black;
   background: rgba(178, 178, 178, .8);
   padding: 0;
   margin: 0;
@@ -98,7 +98,7 @@ body {
   list-style-type: none;
 }
 
-label {
+#selectList label {
   font-weight: bold;
   font-size: .5rem;
   text-align:center;
@@ -139,7 +139,7 @@ label {
 #legendLeft{
   font-family: "Open Sans";
   text-align: center;
-  border: .1rem solid black;
+  border: .05rem solid black;
   background: rgba(178, 178, 178, .7);
   padding: 0;
   margin: 0;
@@ -173,34 +173,30 @@ label {
 }
 
 #originClassesLeft li {
-  margin-bottom: 6px;
-  font-size:.4rem;
+  margin-bottom: .25rem;
   display: flex;
   align-items: center;
-  text-transform: capitalize;
   border: .05rem solid black;
 }
 
 #originClassesRight li {
-  margin-bottom: 6px;
-  font-size:.4rem;
+  margin-bottom: .25rem;
   display: flex;
   align-items: center;
-  text-transform: capitalize;
   border: .05rem solid black;
 }
 
 .categoryTitleLeft{
-  margin-top: 5px;
-  margin-bottom: 2px;
-  font-size: .5em;
+  margin-top: .2rem;
+  margin-bottom: .05rem;
+  font-size: .5rem;
   text-align:center;
 }
 
 .categoryTitleRight{
-  margin-top: 5px;
-  margin-bottom: 2px;
-  font-size: .5em;
+  margin-top: .2rem;
+  margin-bottom: .05rem;
+  font-size: .5rem;
   text-align:center;
 }
 
@@ -213,6 +209,7 @@ label {
 .popUp {
   text-transform: uppercase;
   position: absolute;
+  overflow: hidden;
   z-index: 10;
   box-shadow: rgba(0, 0, 0, .2) 0 0 4px 2px;
   background: #fff;

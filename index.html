@@ -2,7 +2,7 @@
 <html>
   <head>
     <title>Latino Origin Dominance</title>
-    <meta name="viewport" content="initial-scale=1.0">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="utf-8">
     <!-- Include jQuery and jQuery UI -->
     <script
@@ -10,17 +10,17 @@
     integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
     crossorigin="anonymous">
     </script>
-    <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="http://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
     <!-- Include Leaflet -->
-    <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"></script>
-    <link href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" rel="stylesheet">
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
+    <link href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" rel="stylesheet">
     <script src="js/leaflet-side-by-side.js"></script>
     <!-- Include CARTO.js -->
-    <script src="https://cartodb-libs.global.ssl.fastly.net/carto.js/v4.1.11/carto.min.js"></script>
-    <!-- <link href="https://carto.com/developers/carto-js/examples/maps/public/style.css" rel="stylesheet">  -->
+    <script src="https://cartodb-libs.global.ssl.fastly.net/carto.js/v4.2.0/carto.min.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Merienda+One&display=swap" rel="stylesheet">
     <!-- Include d3 and d3pie-->
-    <script src="https://d3js.org/d3.v3.min.js"  charset="utf-8"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/d3/4.12.0/d3.min.js"></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <!-- <script src="//cdnjs.cloudflare.com/ajax/libs/d3/4.12.0/d3.min.js"></script> -->
     <script src="js/d3pie.min.js"></script>
     <!-- Master CSS link -->
     <link rel="stylesheet" href="css/master.css">
@@ -31,9 +31,19 @@
   </head>
   <body>
     <div id="map"></div>
-    <div id="leftTitle">Dominant Latino Origin by Census Tract 2010</div>
-    <div id="rightTitle">Dominant Latino Origin by Census Tract 2017</div>
+    <!-- <div id = "dataViewContainer">
+      <ul id = "dataViewList"> </ui>
+        <li id = "Puerto-Rican">Puerto-Rican: 0</li>
+        <li id = "South_American">South American: 0</li>
+        <li id = "Central_American">Central American: 0</li>
+        <li id = "Dominican">Dominican: 0</li>
+        <li id = "Mexican">Mexican: 0</li>
+        <li id = "Cuban">Cuban: 0</li>
+        <li id = "Other">Other: 0</li> -->
+    <!-- </div> -->
     <!-- Create HTML Element for Map Legend-->
+    <div id="leftTitle">Dominant Latino Origin <br> by Census Tract 2010</div>
+    <div id="rightTitle">Dominant Latino Origin <br> by Census Tract 2017</div>
     <div id ='legendRight'>
       <ul id = "originClassesRight"></ul>
     </div>
@@ -50,7 +60,7 @@
           <select id = "layer_selector" class = "selector">
             <option disabled selected value> -- Select a Layer -- </option>
             <option value = "layersOff"> Turn Layers Off </option>
-            <option value = "villages"> LI Villages </option>
+            <option value = "villages"> LI Villages, Hamlets & CDP </option>
             <option value = "cityTowns"> LI Cities & Towns </option>
             <option value = "counties"> LI Counties </option>
           </select>
@@ -62,9 +72,9 @@
             <option value = 2017> 2017 </option>
             <option value = 2010> 2010 </option>
             <option value = 1990> 1990 </option>
-            <!-- <option value = 1980> 1980 </option>
+            <option value = 1980> 1980 </option>
             <option value = 1970> 1970 </option>
-            <option value = 1960> 1960 </option> -->
+            <option value = 1960> 1960 </option>
           </select>
         </li>
         <li>
@@ -74,9 +84,9 @@
             <option value = 2017> 2017 </option>
             <option value = 2010> 2010 </option>
             <option value = 1990> 1990 </option>
-            <!-- <option value = 1980> 1980 </option>
+            <option value = 1980> 1980 </option>
             <option value = 1970> 1970 </option>
-            <option value = 1960> 1960 </option> -->
+            <option value = 1960> 1960 </option>
           </select>
         </li>
       </ul>

@@ -96,12 +96,13 @@ var popFactory = {
     "header": {
       "title": {
         "text": popFactory.headerText,
-        "fontSize": 10
+        "font": "open sans",
+        "fontSize": 14
       },
       "subtitle": {
-        "text": "Total Latino Population",
+        "text": "Total",
         "color": "#000",
-        "fontSize": 7,
+        "fontSize": 9,
         "font": "open sans"
       },
       "location": "pie-center",
@@ -122,18 +123,25 @@ var popFactory = {
     "labels": {
       "outer": {
         "format": "label-value2",
-        "pieDistance": 10
+        "pieDistance": 12
       },
       "inner": {
-        "hideWhenLessThanPercentage": 1.5
+        "hideWhenLessThanPercentage": 2.1
       },
+
+      "percentage":{
+        "color":"#ffffff"
+      },
+
       "mainLabel": {
-        "fontSize": 8
+        "font": "open sans",
+        "fontSize": 10,
+        "color": '#000'
       },
       // "percentage" : {"color" : "#000", "fontSize" : 9, "decimalPlaces" : 0},
       "value": {
         "color": "#000",
-        "fontSize": 8
+        "fontSize": 9
       },
       "lines": {
         "enabled": true,

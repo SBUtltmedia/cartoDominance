@@ -3,7 +3,13 @@ document.addEventListener("DOMContentLoaded", init);
 // function reports window size, used to resize when window extent changes
 function reportWindowSize() {
   var elem = document.querySelector('html');
-  elem.style.fontSize = `${window.innerWidth/75}px`;
+  // changes root html font size to 3/4 of the inner screen width
+  let scaleFactor = 75;
+  // keep root html font size bigger for smaller screens
+  if (window.innerWidth < 1440){
+    scaleFactor = 62.5
+  }
+  elem.style.fontSize = `${window.innerWidth/scaleFactor}px`;
 }
 
 
@@ -19,7 +25,6 @@ function init() {
         });
       }
   });
-
 
 
   reportWindowSize();
@@ -40,6 +45,10 @@ function init() {
   map.setMinZoom(8);
 
   map.setMaxZoom(15);
+
+  if (window.innerWidth < 1536){
+    map.setView([40.789142, -73.064961], 9)
+  }
 
   //L.doubleClickZoom(false);
 
@@ -602,11 +611,14 @@ function init() {
     currentMousePos = event.pageX
     sliderOffset = $('.leaflet-sbs-divider').offset().left;
     // Used to control layout of map as slider changes
+    // Note that the original property set has to stay consistent since the elements are not being removed then added
+    // just the css is changing so if you try to usue "top" for example and the original was "bottom"
+    // It'll cause the html element to have both properties with bad side effects.
     if(sliderOffset < window.innerWidth * .2){
       $('#leftTitle, #legendLeft').hide()
       $('#rightTitle, #legendRight').show()
       $('#selector_container').css({bottom:"75%", left:"1.5%"})
-      $('#rightTitle').css({"right": "40%", "font-size": "1.65rem", "top": "6%"})
+      $('#rightTitle').css({"right": "38%", "font-size": "1.65rem", "bottom": "81%"})
     }
     if(sliderOffset > window.innerWidth * .9 ){
       $('#rightTitle, #legendRight').hide()
@@ -618,8 +630,8 @@ function init() {
       $('#rightTitle, #legendRight').show()
       $('#leftTitle, #legendLeft').show()
       $('#selector_container').css({bottom:"7.5%", left:"1%"})
-      $('#leftTitle').css({"left": "15%", "font-size": "1.15rem", "top": "7.5%"})
-      $('#rightTitle').css({"right": "15%", "font-size": "1.15rem", "bottom": "7.5%"})
+      $('#leftTitle').css({"left": "15%", "font-size": "1.35rem", "top": "7.5%"})
+      $('#rightTitle').css({"right": "15%", "font-size": "1.35rem", "bottom": "7.5%"})
     // console.log(currentMousePos + "|" + sliderOffset);
   }
   });
@@ -713,9 +725,19 @@ function clickedOnFeature(featureEvent) {
     }
 
     var popCount = popFactory.newPopUp(featureEvent);
+    console.log(event.clientX + "|" + event.clientY)
+    var xPos = event.clientX;
+    var yPos = event.clientY;
+    if (xPos > window.innerWidth - 500){
+      xPos = xPos - 400
+    }
+    if (yPos > window.innerHeight - 500){
+      yPos = yPos - 300
+    }
+
     $("#popUp" + popCount).css({
-      "left": event.clientX + 5,
-      "top": event.clientY + 5,
+      "left": xPos,
+      "top": yPos,
       "visibility": "visible"
     });
 
@@ -726,6 +748,100 @@ function clickedOnFeature(featureEvent) {
     var pie = new d3pie("pieChart" + popCount, popFactory.pieConfig());
 
   };
+
+  // jQuery for splash screen
+
+  $('<div/>', {
+    id: 'splashScreen'
+  }).css({
+    background:  'rgb(178, 178, 178)',
+    position: 'absolute',
+    width: '30rem',
+    height: '15rem',
+    top: '30%',
+    right:'30%',
+    'z-index': '10',
+    opacity: '.9',
+    'box-shadow': `.06rem -.06rem .4rem -.03rem #302F2F,
+               -.06rem .06rem .4rem -.03rem #302F2F`,
+    border: ".05rem solid black",
+    'font-family':"Open Sans"
+  }).appendTo("body")
+
+  $('<p/>',{
+    id: 'splashScreenTextTitle',
+    html:  `<br><br>Where Do Latino's Trace Their Origins Too?`,
+  }).css({
+    'font-family': "Merienda One",
+    'text-align': 'center',
+    'font-size': '1.1rem',
+    'font-weight': 'bold'
+  }).appendTo('#splashScreen')
+
+  $('<p/>',{
+    id: 'splashScreenText',
+    html:  `Explore Census Data for Long Island's Latino Population!`
+}).css({
+  'text-align': 'center',
+  'font-size': '.8rem',
+  'font-weight': '650'
+}).appendTo('#splashScreen')
+
+$('<ul/>',{
+  id: 'splashScreenList',
+  html: `
+  <li> Change data layers in the bottom left </li>
+  <li> Use the map slider to compare different years </li>
+  <li> Click on the island to bring up helpful pie charts! </li>`
+}).css({
+  'padding-left': '12em',
+  'margin-bottom': '2em',
+  'font-size': '.7rem'
+}).appendTo('#splashScreen')
+
+
+  $('<label />', {id: 'checkBoxLabel'}).html("check to close window").prepend(
+
+  $('<input type = "checkbox"/>',{
+    id: '#splashCheckBox'
+  }).css({
+  'vertical-align':'middle',
+  'position': 'relative',
+  'bottom': '.08em',
+  'width': '.5em',
+  'height': '.5em'
+})).css({
+  position:'absolute',
+  left:"1%",
+  bottom:"1%",
+  'font-size': '.7rem',
+  display:'block',
+}).appendTo('#splashScreen')
+
+$('<div/>', {
+  id: 'overLay'
+}).css({
+  background:  'rgba(0, 0, 0, .30)',
+  position: 'absolute',
+  height: `${window.innerHeight}px`,
+  width: `${window.innerWidth}px`,
+  'z-index': '9'
+}).appendTo("body")
+
+ $(window).resize(function(){
+   $('#overLay').css({
+     height: `${window.innerHeight}px`,
+     width: `${window.innerWidth}px`
+   });
+ });
+
+ $("input[type=checkbox]").on("click", function(){
+   $('#splashScreen').remove()
+   $('#overLay').remove()
+ });
+
+
+
 
 
 
