@@ -76,7 +76,7 @@ body {
 
 
 #selector_container{
-  font-family: "Open Sans";
+  font-family: "Helvetica";
   text-align: center;
   border: .05rem solid black;
   background: rgba(178, 178, 178, .8);
@@ -121,7 +121,8 @@ body {
 
 
 #legendRight{
-  font-family: "Open Sans";
+  font-family: "Helvetica";
+  font-weight:bold;
   text-align: center;
   border: .05rem solid black;
   background: rgba(178, 178, 178, .7);
@@ -137,7 +138,8 @@ body {
 }
 
 #legendLeft{
-  font-family: "Open Sans";
+  font-family: "Helvetica";
+  font-weight:bold;
   text-align: center;
   border: .05rem solid black;
   background: rgba(178, 178, 178, .7);
@@ -157,7 +159,7 @@ body {
 #originClassesLeft {
   margin: auto;
   padding: .25rem;
-  width: 4rem;
+  width: 6rem;
   text-align: center;
   list-style-type: none;
 
@@ -166,7 +168,7 @@ body {
 #originClassesRight {
   margin: auto;
   padding: .25rem;
-  width: 4rem;
+  width: 6rem;
   text-align: center;
   list-style-type: none;
 
@@ -203,6 +205,8 @@ body {
 .classBreak{
   width: 5rem;
   height: .5rem;
+  font-size: .4rem;
+  color: #000;
   box-sizing: border-box;
 }
 

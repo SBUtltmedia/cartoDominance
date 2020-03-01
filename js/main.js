@@ -4,11 +4,12 @@ document.addEventListener("DOMContentLoaded", init);
 function reportWindowSize() {
   var elem = document.querySelector('html');
   // changes root html font size to 3/4 of the inner screen width
-  let scaleFactor = 75;
+  let scaleFactor = 60;
   // keep root html font size bigger for smaller screens
-  if (window.innerWidth < 1440){
-    scaleFactor = 62.5
-  }
+  // Causes Issues with positioning of same elements; so not using currently, but left code in
+  //if (window.innerWidth < 1440){
+    //scaleFactor = 75
+  //}
   elem.style.fontSize = `${window.innerWidth/scaleFactor}px`;
 }
 
@@ -215,7 +216,7 @@ function init() {
 
 
 
-  var rampCount = 3;
+  var rampCount = 4;
 
 
   originRamp = Array.from(Array(rampCount), (x, index) => 80 - index * 10)
@@ -286,10 +287,79 @@ function init() {
   $('#originClassesLeft').html("").append(legendContentLeft);
   $('#originClassesRight').html("").append(legendContentRight);
 
+  // add buckets to legend
+
+  function addBuckets(){
+    const buckets = [40, 60, 80, 100];
+
+    if (document.getElementById('rampClassLeft') === null){
+      $('<li/>', {
+      id: `rampClassLeft`,
+      style: 'border:none',
+    }).appendTo('#originClassesLeft');
+
+    for(bucket of buckets){
+    $('<div/>', {
+        class:"classBreak",
+        html:"&leq; " + bucket + "%",
+        // style: "border: .05rem solid black"
+      }).appendTo('#rampClassLeft')
+    }
+  }
+
+  if (document.getElementById('rampClassRight') === null){
+    $('<li/>', {
+    id: `rampClassRight`,
+    style: 'border:none',
+  }).appendTo('#originClassesRight');
+
+  for(bucket of buckets){
+  $('<div/>', {
+      class:"classBreak",
+      html:"&leq; " + bucket + "%",
+      // style: "border: .05rem solid black"
+    }).appendTo('#rampClassRight')
+  }
+}
+
+}
+
+  addBuckets();
+
+
+
 // Here is where all the map layers are created, each of the main dominance layers make use of the variable list
   const varList = ['v01001', 'v01002', 'v01003', 'v01004', 'v01005', 'v01006', 'v01007'];
 
   const dominanceLayer2017 = createLayer(2017, varList);
+
+  // function createClassLabel(event){
+  //   if (document.getElementById('rampClassLeft') === null){
+  //     buckets = event.styles[0].getBuckets();
+  //     $('<li/>', {
+  //     id: `rampClassLeft`,
+  //     style: 'border:none',
+  //   }).appendTo('#originClassesLeft');
+  //     $('<li/>', {
+  //     id: `rampClassRight`,
+  //     style: 'border:none'
+  //   }).appendTo('#originClassesRight')
+  //     for(bucket of buckets){
+  //     $('<div/>', {
+  //         class:"classBreak",
+  //         html:"&leq; " + Math.round(bucket.max * 100) + "%",
+  //         // style: "border: .05rem solid black"
+  //       }).appendTo('#rampClassLeft')
+  //     $('<div/>', {
+  //         class:"classBreak",
+  //         html:"&leq; " + Math.round(bucket.max * 100) + "%",
+  //         // style: "border: .05rem solid black"
+  //       }).appendTo('#rampClassRight')
+  //     }
+  //   }
+  //
+  //
+  // }
 
   const dominanceLayer2010 = createLayer(2010, varList);
 
@@ -496,20 +566,30 @@ function init() {
 // First when the {year} value is selected from the dropdown addLayerToclient is called (see above)
 // Next we check which client the layer was added to, then we find and remove the elements from the correct legend
 // that are no longer represented by the map layers
-// Before all that however, you'll notice that the legend first needs to be recreated on the chance the previously loaded layer
-// Had already modified the legend. Surprsingly this is pretty fast so I didin't go further than this.
+// Before all that however, you'll notice that the legend first needs to be recreated on the
+// chance the previously loaded layer Had already modified the legend.
+// Surprsingly this is pretty fast so I didin't go further than this.
+
     1960: function(client) {
       addLayerToClient(client, dominanceLayer1960);
       if(client == clientLeft){
-      // $('#originClassesLeft').html("").append(legendContentLeft);
+      $('#originClassesLeft').html("").append(legendContentLeft);
+      addBuckets();
       $('#legendLeft').find('#South_American_left, #categoryTitleLeft_South_American').remove()
       $('#legendLeft').find('#Central_American_left, #categoryTitleLeft_Central_American').remove()
       $('#legendLeft').find('#Dominican_left, #categoryTitleLeft_Dominican').remove()
       $('#legendLeft').find('#Other_left, #categoryTitleLeft_Other').remove()
       $('#legendLeft').find('#Mexican_left, #categoryTitleLeft_Mexican').remove()
       $('#legendLeft').find('#Cuban_left, #categoryTitleLeft_Cuban').remove()
+
+
+      // $('#rampClassLeft').remove()
+      // dominanceLayer1960.on('metadataChanged', function(event){
+      //   createClassLabel(event)
+      // })
     } else {
-      // $('#originClassesRight').html("").append(legendContentRight);
+      $('#originClassesRight').html("").append(legendContentRight);
+      addBuckets();
       $('#legendRight').find('#South_American_right, #categoryTitleRight_South_American').remove()
       $('#legendRight').find('#Central_American_right, #categoryTitleRight_Central_American').remove()
       $('#legendRight').find('#Dominican_right, #categoryTitleRight_Dominican').remove()
@@ -523,6 +603,7 @@ function init() {
       addLayerToClient(client, dominanceLayer1970);
       if(client == clientLeft){
       $('#originClassesLeft').html("").append(legendContentLeft);
+      addBuckets();
       $('#legendLeft').find('#South_American_left, #categoryTitleLeft_South_American').remove()
       $('#legendLeft').find('#Central_American_left, #categoryTitleLeft_Central_American').remove()
       $('#legendLeft').find('#Dominican_left, #categoryTitleLeft_Dominican').remove()
@@ -530,6 +611,7 @@ function init() {
       $('#legendLeft').find('#Cuban_left, #categoryTitleLeft_Cuban').remove()
     } else {
       $('#originClassesRight').html("").append(legendContentRight);
+      addBuckets();
       $('#legendRight').find('#South_American_right, #categoryTitleRight_South_American').remove()
       $('#legendRight').find('#Central_American_right, #categoryTitleRight_Central_American').remove()
       $('#legendRight').find('#Dominican_right, #categoryTitleRight_Dominican').remove()
@@ -542,11 +624,13 @@ function init() {
       addLayerToClient(client, dominanceLayer1980);
       if(client == clientLeft){
       $('#originClassesLeft').html("").append(legendContentLeft);
+      addBuckets();
       $('#legendLeft').find('#South_American_left, #categoryTitleLeft_South_American').remove()
       $('#legendLeft').find('#Central_American_left, #categoryTitleLeft_Central_American').remove()
       $('#legendLeft').find('#Dominican_left, #categoryTitleLeft_Dominican').remove()
     } else {
       $('#originClassesRight').html("").append(legendContentRight);
+      addBuckets();
       $('#legendRight').find('#South_American_right, #categoryTitleRight_South_American').remove()
       $('#legendRight').find('#Central_American_right, #categoryTitleRight_Central_American').remove()
       $('#legendRight').find('#Dominican_right, #categoryTitleRight_Dominican').remove()
@@ -557,8 +641,10 @@ function init() {
       addLayerToClient(client, dominanceLayer1990);
       if(client == clientLeft){
       $('#originClassesLeft').html("").append(legendContentLeft);
+      addBuckets();
     } else {
       $('#originClassesRight').html("").append(legendContentRight);
+      addBuckets();
     }
    },
 
@@ -566,8 +652,10 @@ function init() {
       addLayerToClient(client, dominanceLayer2010);
       if(client == clientLeft){
       $('#originClassesLeft').html("").append(legendContentLeft);
+      addBuckets();
     } else {
       $('#originClassesRight').html("").append(legendContentRight);
+      addBuckets();
     }
    },
 
@@ -575,8 +663,10 @@ function init() {
       addLayerToClient(client, dominanceLayer2017);
       if(client == clientLeft){
       $('#originClassesLeft').html("").append(legendContentLeft);
+      addBuckets();
     } else {
       $('#originClassesRight').html("").append(legendContentRight);
+      addBuckets();
     }
    }
   };
@@ -617,14 +707,14 @@ function init() {
     if(sliderOffset < window.innerWidth * .2){
       $('#leftTitle, #legendLeft').hide()
       $('#rightTitle, #legendRight').show()
-      $('#selector_container').css({bottom:"75%", left:"1.5%"})
-      $('#rightTitle').css({"right": "38%", "font-size": "1.65rem", "bottom": "81%"})
+      $('#selector_container').css({bottom:"70.5%", left:"1.5%"})
+      $('#rightTitle').css({"right": "35.25%", "font-size": "1.65rem", "bottom": "78%"})
     }
     if(sliderOffset > window.innerWidth * .9 ){
       $('#rightTitle, #legendRight').hide()
       $('#leftTitle, #legendLeft').show()
-      $('#selector_container').css({bottom:"7.5%", left:"91%"})
-      $('#leftTitle').css({"left": "35%", "font-size": "1.65rem", "top":"6%"})
+      $('#selector_container').css({bottom:"7.5%", left:"88.5%"})
+      $('#leftTitle').css({"left": "32%", "font-size": "1.65rem", "top":"6%"})
     }
     if(sliderOffset > window.innerWidth * .2 && sliderOffset < window.innerWidth * .9 ){
       $('#rightTitle, #legendRight').show()
@@ -635,6 +725,8 @@ function init() {
     // console.log(currentMousePos + "|" + sliderOffset);
   }
   });
+
+  console.log(sliderOffset);
 
 
 // Feature clicks for each dominance layer
@@ -758,14 +850,14 @@ function clickedOnFeature(featureEvent) {
     position: 'absolute',
     width: '30rem',
     height: '15rem',
-    top: '30%',
-    right:'30%',
+    top: '25%',
+    right:'25%',
     'z-index': '10',
     opacity: '.9',
     'box-shadow': `.06rem -.06rem .4rem -.03rem #302F2F,
                -.06rem .06rem .4rem -.03rem #302F2F`,
     border: ".05rem solid black",
-    'font-family':"Open Sans"
+    'font-family':"Helvetica"
   }).appendTo("body")
 
   $('<p/>',{
@@ -800,7 +892,7 @@ $('<ul/>',{
 }).appendTo('#splashScreen')
 
 
-  $('<label />', {id: 'checkBoxLabel'}).html("check to close window").prepend(
+  $('<label />', {id: 'checkBoxLabel'}).html("&check; to close").prepend(
 
   $('<input type = "checkbox"/>',{
     id: '#splashCheckBox'
@@ -808,13 +900,13 @@ $('<ul/>',{
   'vertical-align':'middle',
   'position': 'relative',
   'bottom': '.08em',
-  'width': '.5em',
-  'height': '.5em'
+  'width': '.5rem',
+  'height': '.5rem'
 })).css({
   position:'absolute',
   left:"1%",
   bottom:"1%",
-  'font-size': '.7rem',
+  'font-size': '.6rem',
   display:'block',
 }).appendTo('#splashScreen')
 
