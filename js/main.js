@@ -3,7 +3,6 @@ document.addEventListener("DOMContentLoaded", init);
 // function reports window size, used to resize when window extent changes
 function reportWindowSize() {
   var elem = document.querySelector('html');
-  // changes root html font size to 3/4 of the inner screen width
   let scaleFactor = 60;
   // keep root html font size bigger for smaller screens
   // Causes Issues with positioning of same elements; so not using currently, but left code in
@@ -47,13 +46,13 @@ function init() {
 
   map.setMaxZoom(15);
 
-  if (window.innerWidth < 1536){
+  if (window.innerWidth < 1537){
     map.setView([40.789142, -73.064961], 9)
   }
 
   //L.doubleClickZoom(false);
 
-  L.tileLayer('http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', {
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', {
 
   }).addTo(map);
 
@@ -62,18 +61,18 @@ function init() {
 
 //  As far as I know we need two clients for the slider to work; but paul you should look into this? - CV 12/13/2019
   const clientLeft = new carto.Client({
-    apiKey: "6835ac33fdea1831afbabcc40bb7e09468c6945a",
+    apiKey: "a5638ec89e3547771e932d328bb95ed7667e27e5",
     username: "latinos",
-    serverUrl: "http://app2.gss.stonybrook.edu/user/latinos"
+    serverUrl: "https://data.gss.stonybrook.edu/user/latinos"
   });
 
   const clientRight = new carto.Client({
-    apiKey: "6835ac33fdea1831afbabcc40bb7e09468c6945a",
-    username: "latinos",
-    serverUrl: "http://app2.gss.stonybrook.edu/user/latinos"
-  });
 
-  var originInfo = {
+  apiKey: "a5638ec89e3547771e932d328bb95ed7667e27e5",
+    username: "latinos",
+    serverUrl: "https://data.gss.stonybrook.edu/user/latinos"
+  });
+var originInfo = {
       "Puerto-Rican": {
         colorInfo: {
           h: 50,
@@ -146,7 +145,7 @@ function init() {
       }
     };
 
-
+// creates the main query used for operational layers
   function createQuery(year, varList){
     varArgs = Array.prototype.slice.call(varList) // cast the variable arguments to a list again for use with list methods
     let caseBlocks = Object.keys(originInfo).map((originKey) => {
@@ -174,7 +173,7 @@ function init() {
     return dominanceQuery
 
   };
-
+// Creates the operational layers
   function createLayer (year, varList){
 
     varArgs = Array.prototype.slice.call(varList)
@@ -397,7 +396,7 @@ function init() {
       line-width: .5px;
       ::labels{
         text-face-name: 'DejaVu Serif Book';
-        text-name:[e911name];
+        text-name:"empty";// [e911name];
         text-placement: point;
         text-size: 12;
         text-fill: #676767;
@@ -862,7 +861,7 @@ function clickedOnFeature(featureEvent) {
 
   $('<p/>',{
     id: 'splashScreenTextTitle',
-    html:  `<br><br>Where Do Latino's Trace Their Origins Too?`,
+    html:  `<br><br>Where Do Latino's Trace Their Origins To?`,
   }).css({
     'font-family': "Merienda One",
     'text-align': 'center',
