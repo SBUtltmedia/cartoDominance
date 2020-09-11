@@ -60,18 +60,15 @@ function init() {
 
 
 //  As far as I know we need two clients for the slider to work; but paul you should look into this? - CV 12/13/2019
-  const clientLeft = new carto.Client({
-    apiKey: "a5638ec89e3547771e932d328bb95ed7667e27e5",
+const clientInfo={
+    apiKey: "default_public",
     username: "latinos",
     serverUrl: "https://data.gss.stonybrook.edu/user/latinos"
-  });
+  }  
 
-  const clientRight = new carto.Client({
+   const clientLeft = new carto.Client(clientInfo)
 
-  apiKey: "a5638ec89e3547771e932d328bb95ed7667e27e5",
-    username: "latinos",
-    serverUrl: "https://data.gss.stonybrook.edu/user/latinos"
-  });
+  const clientRight = new carto.Client(clientInfo);
 var originInfo = {
       "Puerto-Rican": {
         colorInfo: {
