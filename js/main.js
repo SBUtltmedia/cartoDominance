@@ -64,7 +64,7 @@ const clientInfo={
     apiKey: "default_public",
     username: "latinos",
     serverUrl: "https://data.gss.stonybrook.edu/user/latinos"
-  }  
+  }
 
    const clientLeft = new carto.Client(clientInfo)
 
@@ -385,27 +385,27 @@ var originInfo = {
     visible: false
   });
 
-  const li_village_source = new carto.source.Dataset('villages_hamlets_wgs84');
-
-  const li_village_style = new carto.style.CartoCSS(`
-    ##layer{
-      line-color:#fff;
-      line-width: .5px;
-      ::labels{
-        text-face-name: 'DejaVu Serif Book';
-        text-name:"empty";// [e911name];
-        text-placement: point;
-        text-size: 12;
-        text-fill: #676767;
-        text-halo-fill: #ffffff;
-        text-halo-radius: 1;
-      }
-    }
-    `);
-
-  const li_village_layer = new carto.layer.Layer(li_village_source, li_village_style, {
-    visible: false
-  });
+  // const li_village_source = new carto.source.Dataset('villages_hamlets_wgs84');
+  //
+  // const li_village_style = new carto.style.CartoCSS(`
+  //   ##layer{
+  //     line-color:#fff;
+  //     line-width: .5px;
+  //     ::labels{
+  //       text-face-name: 'DejaVu Serif Book';
+  //       text-name:"empty";// [e911name];
+  //       text-placement: point;
+  //       text-size: 12;
+  //       text-fill: #676767;
+  //       text-halo-fill: #ffffff;
+  //       text-halo-radius: 1;
+  //     }
+  //   }
+  //   `);
+  //
+  // const li_village_layer = new carto.layer.Layer(li_village_source, li_village_style, {
+  //   visible: false
+  // });
 
   const li_cityTown_source = new carto.source.Dataset("li_cities_towns_wgs84");
 
@@ -481,8 +481,8 @@ var originInfo = {
 
 
   // Add layers to both sides of the sliders
-  clientLeft.addLayers([li_bound_layer,dominanceLayer2010, li_village_layer, li_cityTown_layer, li_counties_layer]);
-  clientRight.addLayers([li_bound_layer,dominanceLayer2017, li_village_layer, li_cityTown_layer, li_counties_layer]);
+  clientLeft.addLayers([li_bound_layer,dominanceLayer2010, li_cityTown_layer, li_counties_layer]);
+  clientRight.addLayers([li_bound_layer,dominanceLayer2017,li_cityTown_layer, li_counties_layer]);
   for(layer of clientLeft.getLayers()){console.log(layer)};
 
 
@@ -537,25 +537,25 @@ var originInfo = {
 // This results in kind of a non-ideal effect where the layer will flicker first before hiding and showing the actual layer
     layersOff: function() {
       li_cityTown_layer.hide();
-      li_village_layer.hide();
+      // li_village_layer.hide();
       li_counties_layer.hide();
     },
 
-    villages: function() {
-      toggleLayer(li_village_layer);
-      li_cityTown_layer.hide();
-      li_counties_layer.hide();
-    },
+    // villages: function() {
+    //   toggleLayer(li_village_layer);
+    //   li_cityTown_layer.hide();
+    //   li_counties_layer.hide();
+    // },
 
     cityTowns: function() {
       toggleLayer(li_cityTown_layer);
-      li_village_layer.hide();
+      // li_village_layer.hide();
       li_counties_layer.hide();
     },
 
     counties: function() {
       toggleLayer(li_counties_layer);
-      li_village_layer.hide();
+      // li_village_layer.hide();
       li_cityTown_layer.hide();
     },
 // A lot is going on here for the years and it's kind of hacky, but let me explain
